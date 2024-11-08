@@ -1,9 +1,65 @@
-import React from 'react'
+import React, { useState } from "react";
+import { Link } from 'react-router-dom';
+import Profile from '../../assets/ketan.jpg';
+import Logo from '../../assets/logo.png';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
-function test() {
-  return (
-    <div>test</div>
-  )
-}
+const Navbar = () => {
+    const [isOpen, setIsOpen] = useState(false);
 
-export default test
+    const toggleMenu = () => {
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        <section className="navbar w-full h-16 p-4 bg-transparent flex items-center justify-between px-8 relative">
+            <div className="flex items-center">
+                <img src={Logo} className="w-11 h-11 ml-4 md:ml-24 rounded-full" alt="Logo" />
+                <span className="ml-4 text-white text-lg font-semibold">EduLink</span>
+            </div>
+            
+            {/* Desktop Menu */}
+            <ul className="hidden lg:flex space-x-10 text-white">
+                <li className="cursor-pointer px-5">
+                    <Link to="/" className="font-semibold">Home</Link>
+                </li>
+                <li className="cursor-pointer px-5">
+                    <Link to="/question" className="font-semibold">Question</Link>
+                </li>
+                <li className="cursor-pointer px-5">
+                    <Link to="/resources" className="font-semibold">Resources</Link>
+                </li>
+            </ul>
+
+            <div className="hidden lg:flex items-center">
+                <img src={Profile} className="w-11 h-11 mr-4 md:mr-24 rounded-full" alt="Profile" />
+            </div>
+
+            {/* Mobile Menu Icon */}
+            <div className="lg:hidden flex items-center">
+                <button onClick={toggleMenu} className="text-white text-2xl">
+                    {isOpen ? <FaTimes /> : <FaBars />}
+                </button>
+            </div>
+
+            {/* Mobile Menu */}
+            <div
+                className={`fixed top-0 right-0 w-3/4 h-full bg-gray-800 text-white flex flex-col items-center pt-10 transition-transform transform ${
+                    isOpen ? "translate-x-0" : "translate-x-full"
+                } lg:hidden`}
+            >
+                {/* Close Button inside the Mobile Menu */}
+                <button onClick={toggleMenu} className="absolute top-4 right-4 text-white text-2xl">
+                    <FaTimes />
+                </button>
+                
+                <Link to="/" className="text-lg font-semibold mt-12" onClick={toggleMenu}>Home</Link>
+                <Link to="/question" className="text-lg font-semibold" onClick={toggleMenu}>Question</Link>
+                <Link to="/resources" className="text-lg font-semibold" onClick={toggleMenu}>Resources</Link>
+                <img src={Profile} className="w-20 h-20 mt-4 rounded-full" alt="Profile" />
+            </div>
+        </section>
+    );
+};
+
+export default Navbar;
