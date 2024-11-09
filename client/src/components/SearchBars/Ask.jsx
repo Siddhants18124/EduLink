@@ -9,7 +9,7 @@ const Ask = () => {
                 placeholder="Search or Ask questions..."
                 className='bg-transparent text-white flex-grow outline-none'
             />
-            <button className='bg-blue-500 px-4 py-2 rounded-full ml-2'>
+            <button className='bg-blue-500 px-3 py-2 rounded-lg ml-2'>
                 Ask Question
             </button>
         </div>

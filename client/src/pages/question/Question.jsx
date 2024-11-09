@@ -33,8 +33,9 @@ const Question = () => {
             <div
                 className='w-full flex mt-20'>
                 {/* ----------------------------------Left Filter-------------------------------------------- */}
-                <div className='basis-1/4 text-center'>
-
+                <div className='basis-1/4 flex flex-col items-center text-center'>
+                    <button className='bg-[#242424] text-white font-semibold w-1/2 p-3 m-2 rounded-2xl hover:bg-[#3d3d3e]'>Recent question</button>
+                    <button className='bg-[#242424] text-white font-semibold w-1/2 p-3 m-2 rounded-2xl'>My question</button>
                 </div>
 
 
@@ -54,7 +55,9 @@ const Question = () => {
 
                 {/* ----------------------------------Right Filter------------------------------------------ */}
                 <div className='basis-1/4 text-center'>
-                
+                    <button className='bg-[#242424] text-white font-semibold w-1/2 p-3 m-2 rounded-2xl'>All</button>
+                    <button className='bg-[#242424] text-white font-semibold w-1/2 p-3 m-2 rounded-2xl'>Answered</button>
+                    <button className='bg-[#242424] text-white font-semibold w-1/2 p-3 m-2 rounded-2xl'>Unanswered</button>
                 </div>
 
 
