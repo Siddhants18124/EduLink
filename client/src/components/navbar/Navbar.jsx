@@ -32,7 +32,9 @@ const Navbar = () => {
             </ul>
 
             <div className="hidden lg:flex items-center">
-                <img src={Profile} className="w-11 h-11 mr-4 md:mr-24 rounded-full" alt="Profile" />
+                <Link to="/Profile">
+                    <img src={Profile} className="w-11 h-11 mr-4 md:mr-24 rounded-full" alt="Profile" />
+                </Link>
             </div>
 
             {/* Mobile Menu Icon */}
@@ -56,7 +58,7 @@ const Navbar = () => {
                 <Link to="/" className="text-lg p-2 font-semibold hover:text-blue-500 mt-12" onClick={toggleMenu}>Home</Link>
                 <Link to="/question" className="text-lg hover:text-blue-500 p-2 font-semibold" onClick={toggleMenu}>Question</Link>
                 <Link to="/resources" className="text-lg hover:text-blue-500 p-2 font-semibold" onClick={toggleMenu}>Resources</Link>
-                <img src={Profile} className="w-20 h-20 p-2 mt-4 rounded-full" alt="Profile" />
+                <Link>  </Link>
             </div>
         </section>
     );
