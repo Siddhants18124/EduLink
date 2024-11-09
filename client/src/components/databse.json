@@ -1,0 +1,27 @@
+[
+    {
+      "id": 10,
+      "timePosted": "09-11-2024 06:50 PM",
+      "askedBy": "Ketan Thakur",
+      "questionTitle": "Which language should I learn to start DSA? And from where to start learning the programming language?",
+      "status": "Unanswered",
+      "tag": "DSA"
+    },
+    {
+      "id": 1,
+      "timePosted": "09-11-2024 06:52 PM",
+      "askedBy": "Siddhant Sharma",
+      "questionTitle": "Should I use the Tailwind CSS or Bootstraps for the projects, or should I write the CSS by myself?",
+      "status": "Answered",
+      "tag": "Web-Dev"
+    },
+    {
+      "id": 3,
+      "timePosted": "09-11-2024 07:00 PM",
+      "askedBy": "M. Mahaanshi Reddy",
+      "questionTitle": "For placement, how much CGPA is required? If I am less than 8, will I not be able to sit for the placement drive?",
+      "status": "Unanswered",
+      "tag": "Other"
+    }
+  ]
+  
