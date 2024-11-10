@@ -1,7 +1,6 @@
 import React from "react";
 import Background from '../../assets/bg.jpg'
 import { Link } from "react-router-dom";
-// import "./signup.css";
 import Logo from '../../assets/logo.png'; 
 
 
@@ -22,15 +21,15 @@ const Login = () => {
 
                     <h1 className="text-6xl font-semibold text-stone-50 ">Welcome back<span className="text-7xl text-[#1D90F5]">.</span></h1>
 
-                    <p class="text-s text-stone-50 pt-5">Don't have an account ? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/signup">Register now</Link> </span></p>
+                    <p className="text-s text-stone-50 pt-5">Don't have an account ? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/signup">Register now</Link> </span></p>
 
                     <form action="/submit"  method="POST">
 
-                        <div class="form-group pt-10 pb-2 ">
+                        <div className="form-group pt-10 pb-2 ">
                             <input className="w-[29.5rem] h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="email" name="email" placeholder="Email" required></input>
                         </div>
 
-                        <div class="form-group pt-1 pb-2">
+                        <div className="form-group pt-1 pb-2">
                             <input className=" shadow-input w-[29.5rem] h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="password" name="password" placeholder="Password" required></input>
                         </div>
 

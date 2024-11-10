@@ -1,6 +1,5 @@
 import React from "react";
 import Background from '../../assets/bg.jpg'
-import "./signup.css";
 import Logo from '../../assets/logo.png'; 
 import { Link } from "react-router-dom";
 
@@ -19,25 +18,25 @@ const Signup = () => {
 
                     <h1 className="text-6xl font-semibold text-stone-50 ">Create new account<span className="text-7xl text-[#1D90F5]">.</span></h1>
 
-                    <p class="text-s text-stone-50 pt-5">Already A Member? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/login">Log In</Link> </span></p>
+                    <p className="text-s text-stone-50 pt-5">Already A Member? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/login">Log In</Link> </span></p>
 
                     <form action="/submit"  method="POST">
                         <div className="flex pt-10 pb-2">
 
-                            <div class="form-group mr-3 ">
+                            <div className="form-group mr-3 ">
                                 <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="text" name="first_name" placeholder="First name" required></input>
                             </div>
                             
-                            <div class="form-group">
+                            <div className="form-group">
                                 <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="text" name="last_name" placeholder="Last name" required></input>
                             </div>
                         </div>
 
-                        <div class="form-group pt-1 pb-2 ">
+                        <div className="form-group pt-1 pb-2 ">
                             <input className="w-[29.5rem] text-stone-50 h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="email" name="email" placeholder="Email" required></input>
                         </div>
 
-                        <div class="form-group pt-1 pb-2">
+                        <div className="form-group pt-1 pb-2">
                             <input className=" shadow-input w-[29.5rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="password" name="password" placeholder="Password" required></input>
                         </div>
 
