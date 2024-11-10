@@ -18,15 +18,6 @@ const QuestionBox = ({ question }) => {
 
         <p className="text-white text-start text-sm mb-2">Asked by: {question.askedBy}</p>
 
-
-        {/* <div className="flex text-center justify-center">
-
-          <div className='pt-4' >
-            <h2 className="text-sm font-semibold text-white bg-blue-500 py-1 px-2 rounded-full">{question.id}</h2>
-          </div>
-            
-        </div> */}
-
         <h2 className="text-xl font-semibold text-start py-4 text-white mb-2">{question.questionTitle}</h2>
 
         <p className="text-gray-500 text-sm text-start">Posted on: {question.timePosted}</p>
@@ -37,6 +28,8 @@ const QuestionBox = ({ question }) => {
       <div className={`ml-4 px-3 py-1 rounded-full text-xs font-semibold  ${getTagColor(question.tag)}  whitespace-nowrap`}>
         {question.tag}
       </div>
+
+      
     </div>
   );
 };

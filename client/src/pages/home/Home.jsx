@@ -44,7 +44,7 @@ const Home = () => {
                     bg-blue-500 rounded-full text-white font-semibold">
                         <Link to="/question" className="font-semibold">Ask question</Link>
                     </button>
-
+                
                     
                 </div>
                     
