@@ -1,28 +1,34 @@
 import Background from '../../assets/bg.jpg'
-import Logo from '../../assets/logo.png'; 
+import Logo from '../../assets/logo.png';
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from 'react'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-function Signup () {
+function Signup() {
     const [first_name, setFirstName] = useState('');
     const [last_name, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [batch, setBatch] = useState('');
+    const [year, setYear] = useState('');
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate();
-
+    const [profilePic, setProfileImage] = useState(null);
+    const [profileImagePreview, setProfileImagePreview] = useState(null);
     const handleSubmit = (e) => {
-        setLoading(true)        
+        setLoading(true)
         e.preventDefault();
 
-        
+
         const payload = {
+            profileImage: profilePic,
             firstName: first_name,
             lastName: last_name,
             email: email,
             password: password,
+            batch: batch,
+            year: year
         }
 
         axios.post('http://localhost:8000/user/signup', payload)
@@ -42,80 +48,137 @@ function Signup () {
         console.log(payload);
     }
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProfileImage(file);
+            setProfileImagePreview(URL.createObjectURL(file));
+        }
+    }
 
-    return(
+    return (
         <section className="signup-form">
 
             {/* Background image */}
-            <div className="bg_cover bg-center h-screen" style={{backgroundImage: `url(${Background})`, backgroundSize: 'cover'}}>
+            <div className="bg_cover bg-center h-screen" style={{ backgroundImage: `url(${Background})`, backgroundSize: 'cover' }}>
                 <div className="app-name-logo navbar bg-transparent flex px-8">
                     <img src={Logo} className="w-11 mt-8 ml-8 h-10 rounded-full" alt="Logo" />
                     <h2 className="text-stone-50 mt-8 ml-2 text-2xl font-semibold">EduLink</h2>
                 </div>
 
-                <div className="form pt-48 pl-52">
+                <div className="form pt-28 pl-52">
 
                     <h1 className="text-6xl font-semibold text-stone-50 ">Create new account<span className="text-7xl text-[#1D90F5]">.</span></h1>
 
                     <p className="text-s text-stone-50 pt-5">Already A Member? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/login">Log In</Link> </span></p>
 
-                    <form onSubmit={handleSubmit} action="/submit"  method="POST">
-                        <div className="flex pt-10 pb-2">
+                    <form onSubmit={handleSubmit} action="/submit" method="POST">
+                            <div className="flex flex-col pt-4">
+
+                                <label htmlFor="profileImage" className="w-28 h-28 rounded-full bg-[#2c2c2c] flex items-center justify-center cursor-pointer border-2 border-[#1D90F5]">
+                                    {profileImagePreview ? (
+                                        <img
+                                            src={profileImagePreview}
+                                            alt="Profile Preview"
+                                            className="w-28 h-28 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-stone-50 text-sm">Upload</span>
+                                    )}
+                                </label>
+                                <input
+                                    type="file"
+                                    id="profileImage"
+                                    onChange={handleFileChange}
+                                    name="profileImage"
+                                    accept="image/*"
+                                    className="hidden"
+                                />
+                            </div>
+                        <div className="flex pt-4 pb-2">
+
 
                             <div className="form-group mr-3 ">
-                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
-                                type="text"
-                                id="first_name"
-                                value={first_name}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                name="first_name" 
-                                placeholder="First name" 
-                                required></input>
+                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
+                                    type="text"
+                                    id="first_name"
+                                    value={first_name}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    name="first_name"
+                                    placeholder="First name"
+                                    required></input>
                             </div>
-                            
+
                             <div className="form-group">
-                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
-                                type="text"
-                                id="last_name"
-                                value={last_name}
-                                onChange={(e) => setLastName(e.target.value)}
-                                name="last_name" 
-                                placeholder="Last name" 
-                                required></input>
+                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
+                                    type="text"
+                                    id="last_name"
+                                    value={last_name}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    name="last_name"
+                                    placeholder="Last name"
+                                    required></input>
                             </div>
                         </div>
 
+
                         <div className="form-group pt-1 pb-2 ">
-                            <input className="w-[29.5rem] text-stone-50 h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            name="email" 
-                            placeholder="Email" 
-                            required></input>
+                            <input className="w-[29.5rem] text-stone-50 h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
+                                type="email"
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                name="email"
+                                placeholder="Email"
+                                required></input>
                         </div>
 
                         <div className="form-group pt-1 pb-2">
-                            <input className=" shadow-input w-[29.5rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            name="password" 
-                            placeholder="Password" 
-                            required></input>
+                            <input className=" shadow-input w-[29.5rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
+                                type="password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                name="password"
+                                placeholder="Password"
+                                required></input>
+                        </div>
+
+                        <div className="flex pt-1 pb-2">
+
+
+                            <div className="form-group mr-3 ">
+                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
+                                    type="text"
+                                    id="batch"
+                                    value={batch}
+                                    onChange={(e) => setBatch(e.target.value)}
+                                    name="first_name"
+                                    placeholder="Batch ( eg. BTECH)"
+                                    required></input>
+                            </div>
+
+                            <div className="form-group">
+                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
+                                    type="text"
+                                    id="year"
+                                    value={year}
+                                    onChange={(e) => setYear(e.target.value)}
+                                    name="last_name"
+                                    placeholder="Year ( eg. 2021 )"
+                                    required></input>
+                            </div>
                         </div>
 
                         <div className="flex space-x-4 pt-6">
 
                             <button
-                            disabled={loading}
-                            className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
+                                disabled={loading}
+                                className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
                                 {loading ? 'Submitting..' : "Sign up"}
 
                             </button>
-                           
+
 
                         </div>
 

@@ -88,7 +88,7 @@ const Profile = () => {
 
                     {/* Cabin details */}
                     <p className='ml-[25%] text-md text-white'>
-                        Cabin No: 10
+                        {data.batch} {data.year}
                     </p>
 
                     {/* Tags */}

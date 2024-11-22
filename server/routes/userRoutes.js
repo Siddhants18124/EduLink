@@ -10,9 +10,9 @@ const secretekey = "bmlmunjaluniversityproject4edulink";
 
 router.post('/signup', async (req, res) => {
     try {
-        const {firstName, lastName, email, password} = req.body;
+        const {profilePic, firstName, lastName, email, password, batch, year} = req.body;
 
-        if(!firstName, !lastName, !email, !password) {
+        if(!profilePic, !firstName, !lastName, !email, !password, !batch, !year) {
             return res.status(400).json({status: false, message: "All fields are required"});
         }
 
@@ -24,10 +24,13 @@ router.post('/signup', async (req, res) => {
         const hashPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({
+            profilePic,
             firstName,
             lastName,
             email,
-            password: hashPassword
+            password: hashPassword,
+            batch,
+            year
         }); 
         await newUser.save();
 
@@ -77,10 +80,13 @@ router.post('/profile', async (req, res) => {
                 return res.status(400).json({status: false, message: "Invalid token"});
             }
             const userData = {
+                profilePic: user?.profilePic,
                 id: user?.id,
                 firstName: user?.firstName,
                 lastName: user?.lastName,
-                email: user?.email
+                email: user?.email,
+                batch: user?.batch,
+                year: user?.year
             }
             return res.status(201).json({status: true, message: "Profile data", data: userData });
         });
