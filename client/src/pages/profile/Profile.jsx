@@ -4,12 +4,49 @@ import ProfilePic from '../../assets/ketan.jpg';
 import TagModal from '../../components/tagModal/TagModal'; // Import the TagModal component
 import QuestionBox from '../../components/QuestionBox/QuestionBox';
 import questionsData from '../../components/databse.json';
-
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
     const [questions, setQuestions] = useState([]);
     const [selectedTags, setSelectedTags] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [data, setUserData] = useState('');
+    const navigate = useNavigate();
+    const handleLogout=()=>{
+        localStorage.removeItem('token');
+        navigate('/login');
+    }
+    const fetchData = () => {
+
+        const token = JSON.parse(localStorage.getItem('token'));
+
+        const header = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        axios.post('http://localhost:8000/user/profile', {}, header)
+            .then((res) => {
+                setLoading(false)
+                setUserData(res.data.data);
+                console.log("User data fetched", res);
+            })
+            .catch((err) => {
+                toast("Login Failed");
+                console.log("Error while fetching data", err)
+                setLoading(false)
+            })
+    }
+
+    console.log(data);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     useEffect(() => {
         if (questionsData && Array.isArray(questionsData)) {
@@ -31,11 +68,11 @@ const Profile = () => {
 
             {/* -----------------------------Navbar--------------------------------------------- */}
             <Navbar />
-
+            {loading && <p>Loading the content...</p>}
             {/* ---------------------------------------------Main Div---------------------------------------------------------------------- */}
             <div className='flex'>
 
-                
+
                 {/* Profile Section */}
                 <div className='flex flex-col basis-1/3'>
 
@@ -46,7 +83,7 @@ const Profile = () => {
 
                     {/* Profile Details */}
                     <h3 className='ml-[25%] text-2xl text-white font-semibold pt-8'>
-                        Dr. Nishtha Phutela
+                        {data.firstName}{data.lastName}
                     </h3>
 
                     {/* Cabin details */}
@@ -68,7 +105,7 @@ const Profile = () => {
                             +
                         </button>
                     </div>
-                    
+
                     {isModalOpen && (
                         <TagModal
                             onClose={() => setIsModalOpen(false)}
@@ -76,9 +113,13 @@ const Profile = () => {
                             selectedTags={selectedTags}
                         />
                     )}
-                    
+
+                    <button onClick={handleLogout} className='bg-red-700 ml-[25%] w-20 mt-8 py-2 rounded-lg text-white font-semibold'>
+                        Logout
+                    </button>
+
                 </div>
-                
+
 
                 {/* ----------------------------------------Right panel------------------------------------------ */}
                 <div className='basis-2/3 flex flex-col'>
@@ -99,14 +140,14 @@ const Profile = () => {
                     <p className='pt-12 pb-4 text-md text-white font-semibold' >Queries to answer</p>
 
                     <div className='text-center w-4/5 items-center '>
-                    {questions
-                        .filter((question) => question.status === "Unanswered" && selectedTags.includes(question.tag))
-                        .map((question) => (
-                            <QuestionBox key={question.id} question={question} status="Unanswered" />
-                        ))
-                    }
-                </div>
-                    
+                        {questions
+                            .filter((question) => question.status === "Unanswered" && selectedTags.includes(question.tag))
+                            .map((question) => (
+                                <QuestionBox key={question.id} question={question} status="Unanswered" />
+                            ))
+                        }
+                    </div>
+
                 </div>
 
 

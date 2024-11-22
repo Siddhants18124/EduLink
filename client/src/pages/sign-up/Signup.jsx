@@ -1,9 +1,48 @@
-import React from "react";
 import Background from '../../assets/bg.jpg'
 import Logo from '../../assets/logo.png'; 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from 'react'
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const Signup = () => {
+function Signup () {
+    const [first_name, setFirstName] = useState('');
+    const [last_name, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate();
+
+    const handleSubmit = (e) => {
+        setLoading(true)        
+        e.preventDefault();
+
+        
+        const payload = {
+            firstName: first_name,
+            lastName: last_name,
+            email: email,
+            password: password,
+        }
+
+        axios.post('http://localhost:8000/user/signup', payload)
+            .then((res) => {
+                setLoading(false)
+                toast("Registration Successful");
+                console.log("User register", res);
+                navigate("/login")
+            })
+            .catch((err) => {
+                toast("Registration Failed");
+                console.log("Error while registration", err)
+                setLoading(false)
+            })
+
+
+        console.log(payload);
+    }
+
+
     return(
         <section className="signup-form">
 
@@ -20,29 +59,62 @@ const Signup = () => {
 
                     <p className="text-s text-stone-50 pt-5">Already A Member? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/login">Log In</Link> </span></p>
 
-                    <form action="/submit"  method="POST">
+                    <form onSubmit={handleSubmit} action="/submit"  method="POST">
                         <div className="flex pt-10 pb-2">
 
                             <div className="form-group mr-3 ">
-                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="text" name="first_name" placeholder="First name" required></input>
+                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                                type="text"
+                                id="first_name"
+                                value={first_name}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                name="first_name" 
+                                placeholder="First name" 
+                                required></input>
                             </div>
                             
                             <div className="form-group">
-                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="text" name="last_name" placeholder="Last name" required></input>
+                                <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                                type="text"
+                                id="last_name"
+                                value={last_name}
+                                onChange={(e) => setLastName(e.target.value)}
+                                name="last_name" 
+                                placeholder="Last name" 
+                                required></input>
                             </div>
                         </div>
 
                         <div className="form-group pt-1 pb-2 ">
-                            <input className="w-[29.5rem] text-stone-50 h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="email" name="email" placeholder="Email" required></input>
+                            <input className="w-[29.5rem] text-stone-50 h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            name="email" 
+                            placeholder="Email" 
+                            required></input>
                         </div>
 
                         <div className="form-group pt-1 pb-2">
-                            <input className=" shadow-input w-[29.5rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="password" name="password" placeholder="Password" required></input>
+                            <input className=" shadow-input w-[29.5rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            name="password" 
+                            placeholder="Password" 
+                            required></input>
                         </div>
 
                         <div className="flex space-x-4 pt-6">
 
-                            <button className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit"><Link to="/">Register now</Link></button>
+                            <button
+                            disabled={loading}
+                            className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
+                                {loading ? 'Submitting..' : "Sign up"}
+
+                            </button>
                            
 
                         </div>

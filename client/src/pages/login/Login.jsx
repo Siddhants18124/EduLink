@@ -1,10 +1,45 @@
 import React from "react";
 import Background from '../../assets/bg.jpg'
-import { Link } from "react-router-dom";
-import Logo from '../../assets/logo.png'; 
+import { Link, useNavigate } from "react-router-dom";
+import Logo from '../../assets/logo.png';
+import { useState } from "react";
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 
 const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false)
+
+    const navigate = useNavigate();
+
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            email: email,
+            password: password,
+        }
+
+        axios.post('http://localhost:8000/user/login', payload)
+            .then((res) => {
+                setLoading(false)
+                toast("Login successful");
+                console.log("Login successful", res);
+                localStorage.setItem('token', JSON.stringify(res.data.token));
+                navigate("/")
+            })
+            .catch((err) => {
+                toast("Login Failed");
+                console.log("Error while login", err)
+                setLoading(false)
+            })
+
+    }
+
+
     return(
         <section className="login-form">
 
@@ -23,25 +58,41 @@ const Login = () => {
 
                     <p className="text-s text-stone-50 pt-5">Don't have an account ? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/signup">Register now</Link> </span></p>
 
-                    <form action="/submit"  method="POST">
+                    <form onSubmit={handleSubmit} action="/submit"  method="POST">
 
                         <div className="form-group pt-10 pb-2 ">
-                            <input className="w-[29.5rem] h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="email" name="email" placeholder="Email" required></input>
+                            <input className="w-[29.5rem] h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            name="email" 
+                            placeholder="Email" 
+                            required></input>
                         </div>
 
                         <div className="form-group pt-1 pb-2">
-                            <input className=" shadow-input w-[29.5rem] h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" type="password" name="password" placeholder="Password" required></input>
+                            <input className=" shadow-input w-[29.5rem] h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                            type="password" 
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            name="password" 
+                            placeholder="Password" 
+                            required></input>
                         </div>
 
                         <div className="flex space-x-4 pt-6">
 
-                            <button className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit"><Link to="/">Log in</Link></button>
-                           
-                            {/* <button className="bg-gray-500 text-neutral-50 w-[14.5rem] h-12 px-4 py-2 rounded-full hover:bg-gray-600 transition" ><Link to="/forgot">Forgot password</Link></button> */}
+                            <button 
+                            disabled={loading}
+                            className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
+                                
+                                {loading ? 'Submitting...' : 'Login'}
 
+                            </button>
+  
                         </div>
-
-                        
 
 
                     </form>
