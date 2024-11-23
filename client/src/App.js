@@ -5,11 +5,15 @@ import Login from './pages/login/Login';
 import Home from "./pages/home/Home";
 import Question from "./pages/question/Question";
 import Profile from "./pages/profile/Profile";
+import { ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // import Resources from "./components/SearchBars/Resources";
 
 
 function App() {
   return (
+    <>
+    <ToastContainer />
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -19,6 +23,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
+    </>
   );
 }
 
