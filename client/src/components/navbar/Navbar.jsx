@@ -21,7 +21,7 @@ const Navbar = () => {
             {/* Desktop Menu */}
             <ul className="hidden lg:flex space-x-10 text-white">
                 <li className="cursor-pointer px-5">
-                    <Link to="/" className="font-semibold">Home</Link>
+                    <Link to="/home" className="font-semibold">Home</Link>
                 </li>
                 <li className="cursor-pointer px-5">
                     <Link to="/question" className="font-semibold">Question</Link>
