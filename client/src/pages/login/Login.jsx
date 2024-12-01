@@ -1,44 +1,47 @@
 import React from "react";
 import Background from '../../assets/bg.jpg'
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { authActions } from "../../redux/store";
 import Logo from '../../assets/logo.png';
 import { useState } from "react";
-import { toast } from 'react-toastify';
 import axios from 'axios';
 
 
+
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false)
 
-    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
+    const history = useNavigate();
+
+    const [inputs, setInputs] = useState({
+        email: '',
+        password: '',
+    });
+
+    const handleChange = (e) => {
+        setInputs(prev => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }));
+    };
+
+    const sendRequest = async () => {
+        const res = axios.post('http://localhost:8000/api/login', {
+            email: inputs.email,
+            password: inputs.password,
+        }).catch(err =>
+            console.log(err)
+        )
+        const data = await res.data;
+        return data;
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
-        const payload = {
-            email: email,
-            password: password,
-        }
-
-        axios.post('http://localhost:8000/user/login', payload)
-            .then((res) => {
-                setLoading(false)
-                toast("Login successful");
-                console.log("Login successful", res);
-                localStorage.setItem('token', JSON.stringify(res.data.token));
-                navigate("/")
-            })
-            .catch((err) => {
-                toast("Login Failed");
-                console.log("Error while login", err)
-                setLoading(false)
-            })
-
-    }
-
+        sendRequest().then(() => dispatch(authActions.login())).then(() => history("/home"));
+    };
 
     return(
         <section className="login-form">
@@ -61,22 +64,22 @@ const Login = () => {
                     <form onSubmit={handleSubmit} action="/submit"  method="POST">
 
                         <div className="form-group pt-10 pb-2 ">
-                            <input className="w-[29.5rem] h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                            <input className="text-white w-[29.5rem] h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
                             type="email"
                             id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={inputs.email}
+                            onChange={handleChange}
                             name="email" 
                             placeholder="Email" 
                             required></input>
                         </div>
 
                         <div className="form-group pt-1 pb-2">
-                            <input className=" shadow-input w-[29.5rem] h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
+                            <input className="text-white  shadow-input w-[29.5rem] h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]" 
                             type="password" 
                             id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={inputs.password}
+                            onChange={handleChange}
                             name="password" 
                             placeholder="Password" 
                             required></input>
@@ -85,11 +88,8 @@ const Login = () => {
                         <div className="flex space-x-4 pt-6">
 
                             <button 
-                            disabled={loading}
                             className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
-                                
-                                {loading ? 'Submitting...' : 'Login'}
-
+                                Login
                             </button>
   
                         </div>

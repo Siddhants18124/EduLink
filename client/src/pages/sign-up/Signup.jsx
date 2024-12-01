@@ -1,60 +1,48 @@
 import Background from '../../assets/bg.jpg'
 import Logo from '../../assets/logo.png';
-import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
-function Signup() {
-    const [first_name, setFirstName] = useState('');
-    const [last_name, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [batch, setBatch] = useState('');
-    const [year, setYear] = useState('');
-    const [loading, setLoading] = useState(false)
-    const navigate = useNavigate();
-    const [profilePic, setProfileImage] = useState(null);
-    const [profileImagePreview, setProfileImagePreview] = useState(null);
+const Signup = () => {
+
+    const history = useNavigate();
+
+    const [inputs, setInputs] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        batch: '',
+        year: '',
+    });
+
+    const handleChange = (e) => {
+        setInputs(prev => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }));
+    };
+
+    const sendRequest = async () => {
+        const res = axios.post('http://localhost:8000/api/signup', {
+            firstName: inputs.firstName,
+            lastName: inputs.lastName,
+            email: inputs.email,
+            password: inputs.password,
+            batch: inputs.batch,
+            year: inputs.year
+        }).catch(err =>
+            console.log(err)
+        )
+        const data = await res.data;
+        return data;
+    };
+
     const handleSubmit = (e) => {
-        setLoading(true)
         e.preventDefault();
-
-
-        const payload = {
-            profileImage: profilePic,
-            firstName: first_name,
-            lastName: last_name,
-            email: email,
-            password: password,
-            batch: batch,
-            year: year
-        }
-
-        axios.post('http://localhost:8000/user/signup', payload)
-            .then((res) => {
-                setLoading(false)
-                toast("Registration Successful");
-                console.log("User register", res);
-                navigate("/login")
-            })
-            .catch((err) => {
-                toast("Registration Failed");
-                console.log("Error while registration", err)
-                setLoading(false)
-            })
-
-
-        console.log(payload);
-    }
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setProfileImage(file);
-            setProfileImagePreview(URL.createObjectURL(file));
-        }
-    }
+        sendRequest().then(() => history("/login"));
+    };
 
     return (
         <section className="signup-form">
@@ -72,39 +60,18 @@ function Signup() {
 
                     <p className="text-s text-stone-50 pt-5">Already A Member? <span className="text-[#1D90F5] underline underline-offset-2"> <Link to="/login">Log In</Link> </span></p>
 
-                    <form onSubmit={handleSubmit} action="/submit" method="POST">
-                            <div className="flex flex-col pt-4">
+                    <form onSubmit={handleSubmit}>
 
-                                <label htmlFor="profileImage" className="w-28 h-28 rounded-full bg-[#2c2c2c] flex items-center justify-center cursor-pointer border-2 border-[#1D90F5]">
-                                    {profileImagePreview ? (
-                                        <img
-                                            src={profileImagePreview}
-                                            alt="Profile Preview"
-                                            className="w-28 h-28 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <span className="text-stone-50 text-sm">Upload</span>
-                                    )}
-                                </label>
-                                <input
-                                    type="file"
-                                    id="profileImage"
-                                    onChange={handleFileChange}
-                                    name="profileImage"
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-                            </div>
                         <div className="flex pt-4 pb-2">
 
 
                             <div className="form-group mr-3 ">
                                 <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
                                     type="text"
-                                    id="first_name"
-                                    value={first_name}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    name="first_name"
+                                    id="firstName"
+                                    value={inputs.firstName}
+                                    onChange={handleChange}
+                                    name="firstName"
                                     placeholder="First name"
                                     required></input>
                             </div>
@@ -112,10 +79,10 @@ function Signup() {
                             <div className="form-group">
                                 <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
                                     type="text"
-                                    id="last_name"
-                                    value={last_name}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                    name="last_name"
+                                    id="lastName"
+                                    value={inputs.lastName}
+                                    onChange={handleChange}
+                                    name="lastName"
                                     placeholder="Last name"
                                     required></input>
                             </div>
@@ -126,8 +93,8 @@ function Signup() {
                             <input className="w-[29.5rem] text-stone-50 h-14 p-3  bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
                                 type="email"
                                 id="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={inputs.email}
+                                onChange={handleChange}
                                 name="email"
                                 placeholder="Email"
                                 required></input>
@@ -137,8 +104,8 @@ function Signup() {
                             <input className=" shadow-input w-[29.5rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
                                 type="password"
                                 id="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                value={inputs.password}
+                                onChange={handleChange}
                                 name="password"
                                 placeholder="Password"
                                 required></input>
@@ -151,9 +118,9 @@ function Signup() {
                                 <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
                                     type="text"
                                     id="batch"
-                                    value={batch}
-                                    onChange={(e) => setBatch(e.target.value)}
-                                    name="first_name"
+                                    value={inputs.batch}
+                                    onChange={handleChange}
+                                    name="batch"
                                     placeholder="Batch ( eg. BTECH)"
                                     required></input>
                             </div>
@@ -162,9 +129,9 @@ function Signup() {
                                 <input className="w-[14.35rem] text-stone-50 h-14 p-3 bg-[#2c2c2c] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D90F5]"
                                     type="text"
                                     id="year"
-                                    value={year}
-                                    onChange={(e) => setYear(e.target.value)}
-                                    name="last_name"
+                                    value={inputs.year}
+                                    onChange={handleChange}
+                                    name="year"
                                     placeholder="Year ( eg. 2021 )"
                                     required></input>
                             </div>
@@ -172,11 +139,8 @@ function Signup() {
 
                         <div className="flex space-x-4 pt-6">
 
-                            <button
-                                disabled={loading}
-                                className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
-                                {loading ? 'Submitting..' : "Sign up"}
-
+                            <button className="bg-[#1D90F5] text-neutral-50 w-[14rem] h-12 px-4 py-2 rounded-full hover:bg-blue-600 transition" type="submit">
+                                Sign Up
                             </button>
 
 
@@ -194,6 +158,6 @@ function Signup() {
 
         </section>
     );
-}
+};
 
 export default Signup;

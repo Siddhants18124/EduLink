@@ -1,77 +1,88 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from "../../components/navbar/Navbar";
 import ProfilePic from '../../assets/ketan.jpg';
-import TagModal from '../../components/tagModal/TagModal'; // Import the TagModal component
-import QuestionBox from '../../components/QuestionBox/QuestionBox';
-import questionsData from '../../components/databse.json';
-import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from "react-redux";
+import { authActions } from "../../redux/store";
+import { useNavigate } from 'react-router-dom';
+// import TagModal from '../../components/tagModal/TagModal'; // Import the TagModal component
+// import QuestionBox from '../../components/QuestionBox/QuestionBox';
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
+axios.defaults.withCredentials = true;
+let firstRender = true;
 
 const Profile = () => {
-    const [questions, setQuestions] = useState([]);
-    const [selectedTags, setSelectedTags] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [data, setUserData] = useState('');
+    const dispatch = useDispatch();
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState({});
     const navigate = useNavigate();
-    const handleLogout=()=>{
-        localStorage.removeItem('token');
-        navigate('/login');
+
+    const refreshToken = async () => {
+        const res = await axios.get('http://localhost:8000/api/refresh', {
+            withCredentials: true,
+        }).catch(err => console.log(err));
+
+
+        const data = await res.data;
+        return data;
     }
-    const fetchData = () => {
 
-        const token = JSON.parse(localStorage.getItem('token'));
 
-        const header = {
-            headers: {
-                Authorization: `Bearer ${token}`
+    const sendRequest = async () => {
+        const res = await axios.get('http://localhost:8000/api/profile', {
+            withCredentials: true,
+        }).catch(err => console.log(err));
+        const data = await res.data;
+        return data;
+    }
+
+    useEffect(() => {
+        // Fetch user data on component mount
+        const fetchData = async () => {
+            setLoading(true);
+            const data = await sendRequest();
+            if (data) {
+                setUser(data.user);
             }
-        }
-
-        axios.post('http://localhost:8000/user/profile', {}, header)
-            .then((res) => {
-                setLoading(false)
-                setUserData(res.data.data);
-                console.log("User data fetched", res);
-            })
-            .catch((err) => {
-                toast("Login Failed");
-                console.log("Error while fetching data", err)
-                setLoading(false)
-            })
-    }
-
-    console.log(data);
-
-    useEffect(() => {
+            setLoading(false);
+        };
         fetchData();
+
+        // Refresh token every 29 seconds
+        const interval = setInterval(() => {
+            refreshToken().then((data) => {
+                if (data) setUser(data.user);
+            });
+        }, 1000 * 29);
+
+        return () => clearInterval(interval); // Cleanup interval on unmount
     }, []);
 
-    useEffect(() => {
-        if (questionsData && Array.isArray(questionsData)) {
-            setQuestions(questionsData);
-        }
-    }, []);
 
-    // Toggle tag selection
-    const handleToggleTag = (tag) => {
-        if (selectedTags.includes(tag)) {
-            setSelectedTags(selectedTags.filter(selectedTag => selectedTag !== tag));
-        } else {
-            setSelectedTags([...selectedTags, tag]);
+    const sendLogoutReq = async () => {
+        const res = await axios.post("http://localhost:8000/api/logout", null, {
+          withCredentials: true,
+        });
+        if (res.status === 200) {
+          return res;
         }
-    };
+        return new Error("Unable TO Logout. Please try again");
+      };
+
+    const handleLogout =   () => {
+        sendLogoutReq().then(() => dispatch(authActions.logout()));
+        navigate("/login");
+      };
+
+
 
     return (
         <div className='bg-[#151515] w-full min-h-screen flex flex-col'>
 
             {/* -----------------------------Navbar--------------------------------------------- */}
             <Navbar />
-            {loading && <p>Loading the content...</p>}
             {/* ---------------------------------------------Main Div---------------------------------------------------------------------- */}
             <div className='flex'>
-
+ 
 
                 {/* Profile Section */}
                 <div className='flex flex-col basis-1/3'>
@@ -83,38 +94,15 @@ const Profile = () => {
 
                     {/* Profile Details */}
                     <h3 className='ml-[25%] text-2xl text-white font-semibold pt-8'>
-                        {data.firstName}{data.lastName}
+                        { user.firstName} {user.lastName}
                     </h3>
 
                     {/* Cabin details */}
-                    <p className='ml-[25%] text-md text-white'>
-                        {data.batch} {data.year}
+                    <p className='ml-[25%] text-md text-white'> 
+                        {user.batch} {user.year}
                     </p>
 
-                    {/* Tags */}
-                    <div className='ml-[25%] mt-4 flex flex-wrap gap-2'>
-                        {selectedTags.map((tag, index) => (
-                            <span key={index} className="bg-amber-900  text-white px-3 py-2 rounded-full text-sm">
-                                {tag}
-                            </span>
-                        ))}
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-gray-700 text-white rounded-full w-8 h-8 p-3 flex items-center justify-center text-lg"
-                        >
-                            +
-                        </button>
-                    </div>
-
-                    {isModalOpen && (
-                        <TagModal
-                            onClose={() => setIsModalOpen(false)}
-                            onToggleTag={handleToggleTag}
-                            selectedTags={selectedTags}
-                        />
-                    )}
-
-                    <button onClick={handleLogout} className='bg-red-700 ml-[25%] w-20 mt-8 py-2 rounded-lg text-white font-semibold'>
+                    <button onClick={handleLogout} to="/login"  className='bg-red-700 ml-[25%] w-20 mt-8 py-2 rounded-lg text-white font-semibold'>
                         Logout
                     </button>
 
@@ -139,14 +127,6 @@ const Profile = () => {
                     {/* Queries to answer content */}
                     <p className='pt-12 pb-4 text-md text-white font-semibold' >Queries to answer</p>
 
-                    <div className='text-center w-4/5 items-center '>
-                        {questions
-                            .filter((question) => question.status === "Unanswered" && selectedTags.includes(question.tag))
-                            .map((question) => (
-                                <QuestionBox key={question.id} question={question} status="Unanswered" />
-                            ))
-                        }
-                    </div>
 
                 </div>
 

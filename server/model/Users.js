@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-    profilePic: {
-        type: String,
-        required: false
-    },    
+const userSchema = new mongoose.Schema({   
     firstName: {
         type: String,
         required: true
@@ -20,7 +16,8 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        minLength: 8
     },
     batch: {
         type: String,
@@ -30,7 +27,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    
+    role: { 
+        type: String, 
+        enum: ["student", "faculty", "alumni", "admin"], 
+        required: false
+    },
 });
 
 module.exports = mongoose.model('User', userSchema);
