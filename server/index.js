@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const connectionDB = require('./db');
-const userRoutes = require('./routes/userRoutes');
+const routes = require('./routes/index');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.use('/api', userRoutes);
+app.use('/api', routes);
 
 
 //routes

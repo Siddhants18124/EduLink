@@ -7,43 +7,69 @@ import axios from 'axios';
 const Signup = () => {
 
     const history = useNavigate();
-
     const [inputs, setInputs] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        batch: '',
-        year: '',
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        batch: "",
+        year: "",
     });
 
+    const [error, setError] = useState(""); // State for errors
+
     const handleChange = (e) => {
-        setInputs(prev => ({
+        setInputs((prev) => ({
             ...prev,
-            [e.target.name]: e.target.value
+            [e.target.name]: e.target.value,
         }));
     };
 
-    const sendRequest = async () => {
-        const res = axios.post('http://localhost:8000/api/signup', {
-            firstName: inputs.firstName,
-            lastName: inputs.lastName,
-            email: inputs.email,
-            password: inputs.password,
-            batch: inputs.batch,
-            year: inputs.year
-        }).catch(err =>
-            console.log(err)
-        )
-        const data = await res.data;
-        return data;
+    const determineRole = (email) => {
+        const studentEmailRegex = /^.+\.(\d{2})([a-zA-Z]+)@bmu\.edu\.in$/; // Student email
+        const facultyEmailRegex = /^[a-zA-Z]+\.[a-zA-Z]+@bmu\.edu\.in$/; // Faculty email
+    
+        if (studentEmailRegex.test(email)) {
+            return 'student'; // If the email matches student format, return 'student'
+        }
+        if (facultyEmailRegex.test(email)) {
+            return 'faculty'; // If the email matches faculty format, return 'faculty'
+        }
+        return null; // Return null if the email format doesn't match any known formats
     };
+    
+
+    const sendRequest = async () => {
+        const role = determineRole(inputs.email);
+    
+        if (!role) {
+            setError('Invalid email format. Please check your email.');
+            return;
+        }
+    
+        try {
+            const res = await axios.post('http://localhost:8000/api/signup', {
+                firstName: inputs.firstName,
+                lastName: inputs.lastName,
+                email: inputs.email,
+                password: inputs.password,
+                batch: inputs.batch,
+                year: inputs.year,
+                role: role, // Pass the inferred role here
+            });
+            return res.data;
+        } catch (err) {
+            console.log(err);
+            setError('Signup failed. Please try again.');
+        }
+    };
+    
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setError(""); // Reset error state
         sendRequest().then(() => history("/login"));
     };
-
     return (
         <section className="signup-form">
 

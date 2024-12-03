@@ -32,7 +32,7 @@ const Login = () => {
             email: inputs.email,
             password: inputs.password,
         }).catch(err =>
-            console.log(err)
+            console.log("LOG ERROR:",err.message),
         )
         const data = await res.data;
         return data;
