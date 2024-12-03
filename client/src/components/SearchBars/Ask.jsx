@@ -76,7 +76,7 @@ const Ask = ({ setSearchQuery }) => {
             )}
 
             {isExpanded && (
-                <div className="flex flex-col w-full space-y-4">
+                <div className="flex flex-col w-full space-y-2">
                     <input
                         type="text"
                         placeholder="Title"
@@ -96,16 +96,16 @@ const Ask = ({ setSearchQuery }) => {
                         placeholder="Image URL"
                         value={imageUrl}
                         onChange={(e) => setImageUrl(e.target.value)}
-                        className="w-full p-2 mb-4 rounded-lg bg-gray-700 text-white"
+                        className="w-full p-2 rounded-lg bg-[#1a1a1a] text-white"
                     />
 
                     {/* Tags Section - Dynamically Render Tags from subjects.json */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center w-3/4 space-x-1 flex-wrap">
                         {subjects.map((tag) => (
                             <span
                                 key={tag.name}
                                 onClick={() => handleTagClick(tag.name)}
-                                className={`cursor-pointer px-3 py-1 rounded-full text-sm ${subjectTags.includes(tag.name) ? tag.color : 'bg-gray-500 text-gray-200'}`}
+                                className={`cursor-pointer px-3 py-1 my-1 rounded-full text-sm ${subjectTags.includes(tag.name) ? 'bg-blue-500' : 'bg-gray-500 text-gray-200'}`}
                             >
                                 {tag.name}
                             </span>
@@ -116,7 +116,7 @@ const Ask = ({ setSearchQuery }) => {
                     <div className="flex justify-between items-center mt-4">
                         <button
                             onClick={handleCancel}
-                            className="bg-gray-500 text-white px-3 py-2 rounded-lg"
+                            className="bg-red-500 text-white px-3 py-2 rounded-lg"
                         >
                             Back
                         </button>
