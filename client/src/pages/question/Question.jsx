@@ -3,7 +3,8 @@ import { FaFilter } from 'react-icons/fa';
 import Ask from '../../components/SearchBars/Ask';
 import Navbar from "../../components/navbar/Navbar";
 import QuestionBox from '../../components/QuestionBox/QuestionBox';
-import questionsData from '../../components/databse.json';
+import axios from 'axios';
+// import questionsData from '../../components/databse.json';
 
 const Question = () => {
     const [questions, setQuestions] = useState([]);
@@ -11,9 +12,15 @@ const Question = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     useEffect(() => {
-        if (questionsData && Array.isArray(questionsData)) {
-            setQuestions(questionsData);
-        }
+        const fetchQuestions = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/question/questions');
+                setQuestions(response.data.questions);
+            } catch (error) {
+                console.error('Error fetching questions:', error);
+            }
+        };
+        fetchQuestions();
     }, []);
 
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
@@ -30,33 +37,33 @@ const Question = () => {
 
             {/* Filter Icon */}
             <div>
-            <button onClick={toggleDropdown} className='bg-[#242424] ml-12 mt-6 mr-2 lg:hidden text-white p-3 rounded-full'>
-                <FaFilter />
-            </button><span className='text-white font-semibold text-md lg:hidden'>Filters</span>
+                <button onClick={toggleDropdown} className='bg-[#242424] ml-12 mt-6 mr-2 lg:hidden text-white p-3 rounded-full'>
+                    <FaFilter />
+                </button><span className='text-white font-semibold text-md lg:hidden'>Filters</span>
 
-            {/* Filter Dropdown for mobile view */}
-            {isDropdownOpen && (
-                <div className='absolute bg-[#242424] text-white rounded-lg ml-12 m-2 shadow-lg'>
-                    <button
-                        className={`block w-full text-left px-4 py-2 ${filter === 'All' ? 'bg-[#3b82f6]' : 'hover:bg-[#3b82f6]'}`}
-                        onClick={() => { setFilter('All'); toggleDropdown(); }}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`block w-full text-left px-4 py-2 ${filter === 'Answered' ? 'bg-[#3b82f6]' : 'hover:bg-[#3b82f6]'}`}
-                        onClick={() => { setFilter('Answered'); toggleDropdown(); }}
-                    >
-                        Answered
-                    </button>
-                    <button
-                        className={`block w-full text-left px-4 py-2 ${filter === 'Unanswered' ? 'bg-[#3b82f6]' : 'hover:bg-[#3b82f6]'}`}
-                        onClick={() => { setFilter('Unanswered'); toggleDropdown(); }}
-                    >
-                        Unanswered
-                    </button>
-                </div>
-            )}
+                {/* Filter Dropdown for mobile view */}
+                {isDropdownOpen && (
+                    <div className='absolute bg-[#242424] text-white rounded-lg ml-12 m-2 shadow-lg'>
+                        <button
+                            className={`block w-full text-left px-4 py-2 ${filter === 'All' ? 'bg-[#3b82f6]' : 'hover:bg-[#3b82f6]'}`}
+                            onClick={() => { setFilter('All'); toggleDropdown(); }}
+                        >
+                            All
+                        </button>
+                        <button
+                            className={`block w-full text-left px-4 py-2 ${filter === 'Answered' ? 'bg-[#3b82f6]' : 'hover:bg-[#3b82f6]'}`}
+                            onClick={() => { setFilter('Answered'); toggleDropdown(); }}
+                        >
+                            Answered
+                        </button>
+                        <button
+                            className={`block w-full text-left px-4 py-2 ${filter === 'Unanswered' ? 'bg-[#3b82f6]' : 'hover:bg-[#3b82f6]'}`}
+                            onClick={() => { setFilter('Unanswered'); toggleDropdown(); }}
+                        >
+                            Unanswered
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className='w-full lg:flex mt-20 justify-between items-start '>
@@ -71,16 +78,16 @@ const Question = () => {
                     {questions
                         .filter((question) => {
                             if (filter === 'All') return true;
-                            if (filter === 'Answered') return question.status === 'Answered';
-                            if (filter === 'Unanswered') return question.status === 'Unanswered';
+                            if (filter === 'Answered') return question.answers && question.answers.length > 0;
+                            if (filter === 'Unanswered') return !question.answers || question.answers.length === 0;
                             return true;
                         })
                         .map((question) => (
-                            <QuestionBox key={question.id} question={question} />
+                            <QuestionBox key={question._id} question={question} />
                         ))
                     }
                 </div>
-                
+
 
                 {/* Right Filter (Show only above 1200px) */}
                 <div className='basis-1/4 flex-col items-center text-center hidden lg:flex'>

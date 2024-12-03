@@ -1,172 +1,148 @@
 const User = require("../model/Users");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
- 
+
 const SECRET_KEY = process.env.SECRET_KEY;
 
-const signup = async (req, res, next) => {
-
+const signup = async (req, res) => {
   const { firstName, lastName, email, password, batch, year } = req.body;
-  
-  let existingUser;
 
   try {
-    existingUser = await User.findOne({ email : email });
-  } catch (err) {
-    console.log(err);
-  }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ status: false, message: "User already exists" });
+    }
 
-  if (existingUser) {
-    return res.status(400).json({ status: false, message: "User already exists" });
-  }
+    let role = "student";
+    if (email === "admin@bmu.edu.in") {
+      role = "admin";
+    } else if (/^[a-zA-Z]+\.[a-zA-Z]+@bmu\.edu\.in$/.test(email)) {
+      role = "faculty";
+    } else if (/^.+\.(\d{2})([a-zA-Z]+)@bmu\.edu\.in$/.test(email)) {
+      // Additional validation for student emails
+    } else {
+      return res.status(400).json({ status: false, message: "Invalid email format" });
+    }
 
-  const hashedPassword = await bcrypt.hashSync(password);
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      batch,
+      year,
+      role,
+    });
 
-  const user = new User({
-    firstName,
-    lastName,
-    email,
-    password: hashedPassword,
-    batch,
-    year
-  });
-  try {
     await user.save();
+    return res.status(201).json({ status: true, message: "Signup successful", user });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    return res.status(500).json({ status: false, message: "Server error" });
   }
+};
 
-  return res.status(201).json({ status: true, message: "Register successful", message:user  });
-}
-
-const login = async (req, res, next) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
 
-  let existingUser; 
-
   try {
-    existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ status: false, message: "User not found" });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({ status: false, message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: existingUser._id, role: existingUser.role }, SECRET_KEY, { expiresIn: "7h" });
+
+    res.cookie("Token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 7 * 3600000),
+      sameSite: "lax",
+    });
+
+    console.log("Generated token: ", token);
+    return res.status(200).json({ status: true, message: "Login successful", user: existingUser, token });
   } catch (err) {
-    return new Error(err);
+    console.error(err);
+    return res.status(500).json({ status: false, message: "Server error" });
   }
-
-  if (!existingUser) {
-    return res.status(400).json({ status: false, message: "User not found" });
-  }
-  // Comparing the password entered and the password in the database
-  const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
-  if (!isPasswordMatch) {
-    return res.status(400).json({ status: false, message: "Invalid credentials" });
-  }
-
-
-  //JWT token assigned here. -------- Expires in 7 hour
-  const token = jwt.sign({id: existingUser._id}, SECRET_KEY, {expiresIn: "7h"});
-
-  // Name of the cookie is the user id ------------ Expires in 7 hour
-  res.cookie(String(existingUser._id), token, {
-    path: "/", 
-    httpOnly: true, 
-    expires: new Date(Date.now() + 7 * 3600000), 
-    sameSite: "lax"
-  });
-
-  console.log("Generated token: ", token);
-
-  if(req.cookies[`${existingUser._id}`]){
-    req.cookies[`${existingUser._id}`] = "";
-  }
-
-  // Logging the user, token and message
-  return res.status(200).json({ status: true, message: "Login successful", user: existingUser, token});
-}
+};
 
 const verifyToken = (req, res, next) => {
   const cookies = req.headers.cookie;
-  const token = cookies.split("=")[1];
-  console.log(token);
-  if(!token){
+  const token = cookies?.split("; ").find((cookie) => cookie.startsWith("Token="))?.split("=")[1];
+
+  if (!token) {
     return res.status(404).json({ status: false, message: "No token found" });
   }
-  jwt.verify(String(token),SECRET_KEY, (err, user) => {
-    if(err){
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) {
       return res.status(401).json({ status: false, message: "Invalid token" });
     }
-    console.log(user.id);
     req.id = user.id;
-  })
-  next();
-}
+    next();
+  });
+};
 
-const getUser = async (req, res, next) => {
+const getUser = async (req, res) => {
   const userId = req.id;
-  let user;
+
   try {
-    user = await User.findById(userId, "-password");
+    const user = await User.findById(userId, "-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ user });
   } catch (err) {
-    return new Error(err);
+    return res.status(500).json({ status: false, message: "Server error" });
   }
-  if (!user) {
-    return res.status(404).json({ messsage: "User Not FOund" });
-  }
-  return res.status(200).json({ user });
 };
 
 const refreshToken = (req, res, next) => {
   const cookies = req.headers.cookie;
-  const prevToken = cookies.split("=")[1];
-  if(!prevToken){
-    return res.status(400).json({message: "No token found"});
-  }
-  jwt.verify(String(prevToken), SECRET_KEY, (err, user) => {
-    if(err){
-      console.log(err);
-      return res.status(403).json({message: "Authentication failed"});
-    }
-    res.clearCookie(`${user.id}`);
-    req.cookies[`${user.id}`] = "";
+  const prevToken = cookies?.split("; ").find((cookie) => cookie.startsWith("Token="))?.split("=")[1];
 
-    const token = jwt.sign({id: user.id}, SECRET_KEY, {expiresIn: "7h"});
-    // Name of the cookie is the user id ------------ Expires in 7 hour
-    res.cookie(String(user.id), token, {
-      path: "/", 
-      httpOnly: true, 
-      expires: new Date(Date.now() + 7 * 3600000), 
-      sameSite: "lax"
+  if (!prevToken) {
+    return res.status(400).json({ message: "No token found" });
+  }
+
+  jwt.verify(prevToken, SECRET_KEY, (err, user) => {
+    if (err) {
+      console.error(err);
+      return res.status(403).json({ message: "Authentication failed" });
+    }
+
+    res.clearCookie("Token", { path: "/" });
+    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: "7h" });
+
+    res.cookie("Token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 7 * 3600000),
+      sameSite: "lax",
     });
 
     req.id = user.id;
-    next()
-
-
-  })
-}
-
-const  logout = (req, res, next) => {
-  const cookies = req.headers.cookie;
-  const prevToken = cookies?.split("=")[1];
-
-  if (!prevToken) {
-      return res.status(400).json({ message: "Couldn't find token" });
-  }
-
-  jwt.verify(String(prevToken), SECRET_KEY, (err, user) => {
-      if (err) {
-          console.log(err);
-          return res.status(403).json({ message: "Authentication failed" });
-      }
-
-      res.clearCookie(`${user.id}`, { path: "/" }); // Clear the cookie
-      req.cookies[`${user.id}`] = "";
-      return res.status(200).json({ message: "Successfully Logged Out" });
+    next();
   });
 };
 
+const logout = (req, res) => {
+  res.clearCookie("Token", { path: "/" });
+  return res.status(200).json({ message: "Successfully Logged Out" });
+};
 
 exports.signup = signup;
 exports.login = login;
 exports.verifyToken = verifyToken;
 exports.getUser = getUser;
-exports.refreshToken = refreshToken
+exports.refreshToken = refreshToken;
 exports.logout = logout;
