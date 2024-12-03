@@ -13,6 +13,7 @@ import Resources from "./pages/resources/Resources";
 import { useSelector } from "react-redux";
 // import Resources from "./components/SearchBars/Resources";
 import QuestionOpen from "./pages/question/QuestionOpen";
+import ResourcesOpen from "./pages/resources/ResourcesOpen";
 
 function App() {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
@@ -27,6 +28,7 @@ function App() {
         <Route path="/question" element={<Question />} />
         <Route path="/question/:questionId" element={<QuestionOpen />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/resources/repo" element={<ResourcesOpen />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
