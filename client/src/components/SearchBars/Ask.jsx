@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import cookie from 'js-cookie';
+import subjects from '../../components/subjects.json'; // Import subjects JSON file
 
-const Ask = () => {
+const Ask = ({ setSearchQuery }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [subjectTags, setSubjectTags] = useState([]);
     const [isPosting, setIsPosting] = useState(false);
-
 
     const handleTagClick = (tag) => {
         setSubjectTags((prevTags) =>
@@ -26,11 +26,12 @@ const Ask = () => {
         setIsExpanded(false);
     };
 
-
     const toggleBox = () => {
         setIsExpanded(!isExpanded);
     };
+
     const token = cookie.get("Token");
+
     const handlePost = async () => {
         setIsPosting(true);
         try {
@@ -63,6 +64,7 @@ const Ask = () => {
                         type="text"
                         placeholder="Search or Ask questions..."
                         className="bg-transparent text-white flex-grow outline-none"
+                        onChange={(e) => setSearchQuery(e.target.value)} 
                     />
                     <button
                         onClick={toggleBox}
@@ -74,7 +76,7 @@ const Ask = () => {
             )}
 
             {isExpanded && (
-                <div className="flex flex-col w-full space-y-4">
+                <div className="flex flex-col w-full space-y-2">
                     <input
                         type="text"
                         placeholder="Title"
@@ -94,19 +96,18 @@ const Ask = () => {
                         placeholder="Image URL"
                         value={imageUrl}
                         onChange={(e) => setImageUrl(e.target.value)}
-                        className="w-full p-2 mb-4 rounded-lg bg-gray-700 text-white"
+                        className="w-full p-2 rounded-lg bg-[#1a1a1a] text-white"
                     />
 
-                    {/* Tags Section */}
-                    <div className="flex items-center space-x-2">
-                        {['COA', 'MFE-1', 'Web-Dev'].map((tag) => (
+                    {/* Tags Section - Dynamically Render Tags from subjects.json */}
+                    <div className="flex items-center w-3/4 space-x-1 flex-wrap">
+                        {subjects.map((tag) => (
                             <span
-                                key={tag}
-                                onClick={() => handleTagClick(tag)}
-                                className={`cursor-pointer px-3 py-1 rounded-full text-sm ${subjectTags.includes(tag) ? 'bg-blue-500 text-white' : 'bg-gray-500 text-gray-200'
-                                    }`}
+                                key={tag.name}
+                                onClick={() => handleTagClick(tag.name)}
+                                className={`cursor-pointer px-3 py-1 my-1 rounded-full text-sm ${subjectTags.includes(tag.name) ? 'bg-blue-500' : 'bg-gray-500 text-gray-200'}`}
                             >
-                                {tag}
+                                {tag.name}
                             </span>
                         ))}
                     </div>
@@ -115,7 +116,7 @@ const Ask = () => {
                     <div className="flex justify-between items-center mt-4">
                         <button
                             onClick={handleCancel}
-                            className="bg-gray-500 text-white px-3 py-2 rounded-lg"
+                            className="bg-red-500 text-white px-3 py-2 rounded-lg"
                         >
                             Back
                         </button>

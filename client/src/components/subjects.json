@@ -1,0 +1,12 @@
+[
+  { "name": "DSA", "color": "bg-red-300 text-red-800" },
+  { "name": "PROGRAMMING", "color": "bg-blue-300 text-blue-800" },
+  { "name": "WEB-DEV", "color": "bg-green-300 text-green-800" },
+  { "name": "JAVA", "color": "bg-yellow-300 text-yellow-800" },
+  { "name": "C++", "color": "bg-purple-300 text-purple-800" },
+  { "name": "JWT", "color": "bg-pink-300 text-pink-800" },
+  { "name": "OS", "color": "bg-teal-300 text-teal-800" },
+  { "name": "DATA SCIENCE", "color": "bg-orange-300 text-orange-800" },
+  { "name": "DC/CN", "color": "bg-indigo-300 text-indigo-800" },
+  { "name": "APP-DEV", "color": "bg-gray-300 text-gray-800" }
+]
