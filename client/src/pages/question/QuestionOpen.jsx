@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FaTrash } from 'react-icons/fa'; // Importing trash icon
 
 const QuestionOpen = () => {
     const { questionId } = useParams();
     const [question, setQuestion] = useState(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState({});
-    const [newReply, setNewReply] = useState("");  // State for the new reply text
+    const [newReply, setNewReply] = useState(""); // State for the new reply text
+    const navigate = useNavigate(); // For redirecting after deletion
 
     const sendRequest = async () => {
         const res = await axios.get('http://localhost:8000/api/profile', {
@@ -15,7 +17,7 @@ const QuestionOpen = () => {
         }).catch(err => console.log(err));
         const data = await res.data;
         return data;
-    }
+    };
 
     // Fetch user data and question details
     useEffect(() => {
@@ -42,34 +44,38 @@ const QuestionOpen = () => {
 
         fetchQuestion();
     }, [questionId]);
-    const fetchReplies = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8000/api/question/questions/${questionId}/replies`, {
-                withCredentials: true,
-            });
-            if (response.data.status) {
-                setQuestion(prevQuestion => ({
-                    ...prevQuestion,
-                    replies: response.data.replies,
-                }));
+
+    const handleDeleteQuestion = async () => {
+        if (window.confirm('Are you sure you want to delete this question?')) {
+            try {
+                const response = await axios.delete(`http://localhost:8000/api/admin/question/${questionId}`, {
+                    withCredentials: true,
+                });
+    
+                if (response.data.status) {
+                    navigate(-1); // Go back to the previous page
+                } else {
+                    alert('Failed to delete the question.');
+                }
+            } catch (err) {
+                console.error('Error deleting question:', err);
+                alert('An error occurred while deleting the question.');
             }
-        } catch (err) {
-            console.error('Error fetching replies:', err);
         }
     };
-    // Handle reply form submission
+
     const handleReplySubmit = async (e) => {
         e.preventDefault();
 
         if (!newReply) {
-            return;  // Prevent submission if reply text is empty
+            return; // Prevent submission if reply text is empty
         }
 
         try {
             const response = await axios.post('http://localhost:8000/api/question/questions/reply', {
                 questionId,
                 body: newReply,
-            }, {  
+            }, {
                 withCredentials: true,
             });
 
@@ -82,11 +88,6 @@ const QuestionOpen = () => {
 
                 // Clear the reply input after submission
                 setNewReply("");
-
-                // Set a timeout to update the replies after 2 seconds
-                setTimeout(() => {
-                    fetchReplies();
-                }, 2000); // 2 seconds delay before fetching the updated replies
             }
         } catch (err) {
             console.error('Error adding reply:', err);
@@ -128,6 +129,17 @@ const QuestionOpen = () => {
                     Asked by: {question.userId ? `${question.userId.firstName} ${question.userId.lastName}` : 'Unknown'}
                 </p>
 
+                {/* Delete Button for Admin */}
+                {user.role === 'admin' && (
+                    <button
+                        onClick={handleDeleteQuestion}
+                        className="bg-red-500 text-white p-2 rounded-full hover:bg-red-700 transition mt-4 flex items-center"
+                    >
+                        <FaTrash className="mr-2" />
+                        Delete Question
+                    </button>
+                )}
+
                 {/* Reply Box (only visible to faculty) */}
                 {user.role === 'faculty' && (
                     <div className="mt-4">
@@ -137,7 +149,7 @@ const QuestionOpen = () => {
                                 value={newReply}
                                 onChange={(e) => setNewReply(e.target.value)}
                                 className="w-1/4 p-2 bg-[#1a1a1a] text-white rounded-md"
-                                placeholder="Enter your text..."
+                                placeholder="Enter your reply..."
                             />
                             <button type="submit" className="bg-gray-500 text-white px-3 mx-2 py-2 rounded-lg">
                                 Reply

@@ -1,8 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FaTrash } from 'react-icons/fa'; // Importing the delete icon from react-icons
 
-const ResourceBox = ({ resource }) => {
+const ResourceBox = ({ resource, onDelete }) => {
   if (!resource) return null;
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this resource?')) {
+      onDelete(resource._id); // Call the delete function passed via props
+    }
+  };
 
   return (
     <div className="bg-[#242424] p-5 rounded-lg shadow-lg flex justify-between items-start mb-6">
@@ -30,6 +37,13 @@ const ResourceBox = ({ resource }) => {
           </span>
         ))}
       </div>
+      <button
+        onClick={handleDelete}
+        className="ml-4 text-red-500 hover:text-red-700 transition"
+        aria-label="Delete Resource"
+      >
+        <FaTrash size={20} />
+      </button>
     </div>
   );
 };
