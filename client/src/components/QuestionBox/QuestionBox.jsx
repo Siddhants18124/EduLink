@@ -17,7 +17,7 @@ const QuestionBox = ({ question }) => {
               </p>
           </div>
           <div className="flex flex-wrap gap-2">
-              {question.subjectTags.map((tag, index) => (
+              {question.subjectTags?.map((tag, index) => (
                   <span
                       key={index}
                       className={`px-3 py-1 rounded-full text-xs font-semibold bg-gray-300 text-gray-800`}
