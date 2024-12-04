@@ -28,7 +28,7 @@ function App() {
         <Route path="/question" element={<Question />} />
         <Route path="/question/:questionId" element={<QuestionOpen />} />
         <Route path="/resources" element={<Resources />} />
-        <Route path="/resources/repo" element={<ResourcesOpen />} />
+        <Route path="/resources/:resourceId" element={<ResourcesOpen />} /> {/* Updated route */}
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>

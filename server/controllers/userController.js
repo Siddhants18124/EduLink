@@ -135,11 +135,78 @@ const refreshToken = (req, res, next) => {
   });
 };
 
+
+
+const updateFacultySubjects = async (req, res, next) => {
+  const { userId, subjects } = req.body; // Expect userId and updated subjects array in the request body
+
+  try {
+    // Find the user by ID and check if they are a faculty
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    if (user.role !== "faculty") {
+      return res.status(403).json({ status: false, message: "Only faculty can have subjects updated" });
+    }
+
+    // Update the subjects array
+    user.subjects = subjects; // Replace the subjects array with the new one
+    await user.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Subjects updated successfully",
+      user,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
+};
+
+const updateSubjects = async (req, res) => {
+  const { id } = req;
+  const { subjects } = req.body; // Array of subjects to be added
+
+  try {
+    // Fetch the user by ID
+    const user = await User.findById(id);
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    // Check if the user is a faculty member
+    if (user.role !== "faculty") {
+      return res.status(403).json({ status: false, message: "Only faculty members can add subjects" });
+    }
+
+    // Add new subjects to the user's subjects array, avoiding duplicates
+    const updatedSubjects = [...new Set([...user.subjects, ...subjects])];
+    user.subjects = updatedSubjects;
+
+    // Save the updated user document
+    await user.save();
+
+    return res.status(200).json({ status: true, message: "Subjects updated successfully", subjects: user.subjects });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
+};
+
+
 const logout = (req, res) => {
   res.clearCookie("Token", { path: "/" });
   return res.status(200).json({ message: "Successfully Logged Out" });
 };
 
+
+exports.updateFacultySubjects = updateFacultySubjects;
+exports.updateSubjects = updateSubjects;
 exports.signup = signup;
 exports.login = login;
 exports.verifyToken = verifyToken;

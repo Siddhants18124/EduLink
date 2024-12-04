@@ -50,13 +50,14 @@ const Question = () => {
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
     const filteredQuestions = questions
-        .filter((q) => {
-            if (filter === 'My Questions') {
-                return q.userId.email === user.email;
-            }
-            return filter === 'All' || q.subjectTags.includes(filter);
-        })
-        .filter((q) => q.title.toLowerCase().includes(searchQuery.toLowerCase())); // Filter by search query
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by createdAt in descending order
+    .filter((q) => {
+        if (filter === 'My Questions') {
+            return q.userId.email === user.email;
+        }
+        return filter === 'All' || q.subjectTags.includes(filter);
+    })
+    .filter((q) => q.title.toLowerCase().includes(searchQuery.toLowerCase())); // Filter by search query
 
     return (
         <div className='bg-[#151515] w-full min-h-screen flex flex-col'>

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import cookie from 'js-cookie';
-import subjects from '../../components/subjects.json'; // Import subjects JSON file
+import subjects from '../subjects.json'; // Import subjects JSON file
 
-const Ask = ({ setSearchQuery }) => {
+const RepoPost = ({ setSearchQuery }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
+    const [links, setLinks] = useState('');
     const [subjectTags, setSubjectTags] = useState([]);
     const [isPosting, setIsPosting] = useState(false);
 
@@ -20,7 +20,7 @@ const Ask = ({ setSearchQuery }) => {
     const handleCancel = () => {
         setTitle('');
         setBody('');
-        setImageUrl('');
+        setLinks([]);
         setSubjectTags([]);
         setIsPosting(false);
         setIsExpanded(false);
@@ -33,43 +33,37 @@ const Ask = ({ setSearchQuery }) => {
     const token = cookie.get("Token");
 
     const handlePost = async () => {
-        // Validate fields
-        if (!title.trim()) {
-            window.alert('Please enter a title for your question.');
-            return;
-        }
-        if (!body.trim()) {
-            window.alert('Please provide a description or body for your question.');
-            return;
-        }
-        if (subjectTags.length === 0) {
-            window.alert('Please select at least one subject tag for your question.');
-            return;
-        }
-    
         setIsPosting(true);
         try {
+            const linksArray = links.split(',').map((link) => link.trim());
+            console.log({
+                title,
+                body,
+                links: linksArray,
+                subjectTags,
+            }); // Log payload
+    
             const response = await axios.post(
-                'http://localhost:8000/api/question/questions',
+                'http://localhost:8000/api/repo/repo',
                 {
                     title,
                     body,
-                    imageUrl,
+                    links: linksArray,
                     subjectTags,
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            console.log('Response:', response.data);
-            console.log('Question posted:', response.data);
-            handleCancel(); // Reset form after successful post
+    
+            console.log('Resource posted:', response.data);
+            handleCancel();
         } catch (error) {
             console.error('Error posting question:', error);
-            window.alert('There was an error posting your question. Please try again.');
         } finally {
             setIsPosting(false);
         }
     };
     
+
     return (
         <div
             className={`2xl:w-2/5 lg:w-2/5 md:w-1/2 sm:w-3/4 ${isExpanded ? 'h-auto' : 'h-16'
@@ -79,7 +73,7 @@ const Ask = ({ setSearchQuery }) => {
                 <div className="flex items-center w-full">
                     <input
                         type="text"
-                        placeholder="Search or Ask questions..."
+                        placeholder="Search or Search repo..."
                         className="bg-transparent text-white flex-grow outline-none"
                         onChange={(e) => setSearchQuery(e.target.value)} 
                     />
@@ -87,7 +81,7 @@ const Ask = ({ setSearchQuery }) => {
                         onClick={toggleBox}
                         className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                     >
-                        Ask Question
+                        Post
                     </button>
                 </div>
             )}
@@ -110,9 +104,9 @@ const Ask = ({ setSearchQuery }) => {
                     ></textarea>
                     <input
                         type="text"
-                        placeholder="Image URL"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="Links"
+                        value={links}
+                        onChange={(e) => setLinks(e.target.value)}
                         className="w-full p-2 rounded-lg bg-[#1a1a1a] text-white"
                     />
 
@@ -150,4 +144,4 @@ const Ask = ({ setSearchQuery }) => {
     );
 };
 
-export default Ask;
+export default RepoPost;

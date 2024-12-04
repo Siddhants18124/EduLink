@@ -149,5 +149,16 @@ const voteRepo = async (req, res) => {
     }
 };
 
+// Fetch All Resources
+const getAllResources = async (req, res) => {
+    try {
+        const resources = await Repo.find().populate('userId', 'email firstName lastName');  // Populate userId with email
+        return res.status(200).json({ status: true, resources });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: false, message: "Error fetching resources" });
+    }
+};
 
-module.exports = { addContentToRepo, addContributor, getRepoContentById, voteRepo ,addResource};
+
+module.exports = { addContentToRepo, addContributor, getRepoContentById, voteRepo ,addResource, getAllResources};
