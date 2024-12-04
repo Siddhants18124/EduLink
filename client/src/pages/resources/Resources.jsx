@@ -35,6 +35,7 @@ const Resources = () => {
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
     const filteredResources = resources
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by createdAt in descending order
         .filter((resource) => {
             // Filter based on selected subject
             if (filter === 'All') return true;

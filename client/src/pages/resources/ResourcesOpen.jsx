@@ -1,8 +1,9 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Navbar from '../../components/navbar/Navbar';
-import { FaTrash } from 'react-icons/fa'; // Import Trash Icon
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Navbar from "../../components/navbar/Navbar";
+import { Link } from "react-router-dom";
+import { FaTrash } from "react-icons/fa"; // Import Trash Icon
 
 const ResourceDetails = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const ResourceDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log('Resource ID:', resourceId);
+  console.log("Resource ID:", resourceId);
 
   useEffect(() => {
     // Fetch the resource data using the resourceId
@@ -36,7 +37,7 @@ const ResourceDetails = () => {
         { type },
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
@@ -54,30 +55,24 @@ const ResourceDetails = () => {
     }
   };
 
-  const handleDelete = async () => {
-    // Confirm the deletion
-    if (window.confirm("Are you sure you want to delete this resource?")) {
-      try {
-        const response = await axios.delete(
-          `http://localhost:8000/api/repo/repo/${resourceId}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        console.log("Delete API response:", response.data);
-        if (response.data.success) {
-          navigate("/resources"); // Redirect to the resources list after deletion
-        } else {
-          console.error("Delete failed:", response.data.message);
-        }
-      } catch (error) {
-        console.error("Error deleting resource:", error);
-      }
-    }
-  };
+  const handleDeleteResource = async () => {
+    if (window.confirm('Are you sure you want to delete this question?')) {
+        try {
+            const response = await axios.delete(`http://localhost:8000/api/admin/repo/${resourceId}`, {
+                withCredentials: true,
+            });
 
+            if (response.data.status) {
+                navigate(-1); // Go back to the previous page
+            } else {
+                alert('Failed to delete the question.');
+            }
+        } catch (err) {
+            console.error('Error deleting question:', err);
+            alert('An error occurred while deleting the question.');
+        }
+    }
+};
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -89,13 +84,13 @@ const ResourceDetails = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="bg-[#151515] w-full min-h-screen flex flex-col text-white p-10">
       {/* Back button */}
       <button
         className="text-gray-400 mb-6 hover:text-gray-200 self-start"
-        onClick={() => navigate(-1)}
+        onClick={() => window.history.back()}
       >
         &larr; Go back
       </button>
@@ -118,11 +113,16 @@ const ResourceDetails = () => {
         <h1 className="text-2xl font-bold mt-4">{resource.title}</h1>
 
         {/* Body */}
-        <p className="text-gray-300 text-lg font-semibold">{resource.body || 'No description available.'}</p>
+        <p className="text-gray-300 text-lg font-semibold">
+          {resource.body || "No description available."}
+        </p>
 
         {/* Posted by */}
         <p className="text-xs text-gray-400 mt-4">
-          Posted by: {resource.userId ? `${resource.userId.firstName} ${resource.userId.lastName}` : 'Unknown'}
+          Posted by:{" "}
+          {resource.userId
+            ? `${resource.userId.firstName} ${resource.userId.lastName}`
+            : "Unknown"}
         </p>
 
         {/* Uploaded Date */}
@@ -132,28 +132,37 @@ const ResourceDetails = () => {
 
         {/* Placeholder for Thumbnail */}
         <div className="flex flex-col">
-          <a
-            href={resource.links || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg mb-4 text-blue-400 underline"
-          >
-            {resource.links || 'No link available'}
-          </a>
+          <div>
+            {resource.links && resource.links.length > 0 ? (
+              resource.links.map((link, index) => (
+                <a
+                  key={index}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg mb-4 text-blue-400 underline block"
+                >
+                  {link}
+                </a>
+              ))
+            ) : (
+              <p className="text-gray-500">No links available</p>
+            )}
+          </div>
 
           {/* Like/Dislike Buttons */}
           <div className="flex gap-4">
             <button
               className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-600"
               aria-label="Upvote"
-              onClick={() => handleVote('upvote')} // Upvote
+              onClick={() => handleVote("upvote")} // Upvote
             >
               ⬆️
             </button>
             <button
               className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-600"
               aria-label="Downvote"
-              onClick={() => handleVote('downvote')} // Downvote
+              onClick={() => handleVote("downvote")} // Downvote
             >
               ⬇️
             </button>
@@ -166,7 +175,7 @@ const ResourceDetails = () => {
         {/* Delete Button */}
         <div className="mt-4 flex justify-end">
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteResource}
             className="bg-red-700 text-white p-2 rounded-full hover:bg-red-600"
             aria-label="Delete Resource"
           >

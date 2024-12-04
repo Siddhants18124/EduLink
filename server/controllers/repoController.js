@@ -65,9 +65,11 @@ const addContributor = async (req, res) => {
     }
 };
 
+
+
 const addResource = async (req, res) => {
     try {
-        const { title, body, subjectTags } = req.body;
+        const { title, body, subjectTags,links } = req.body;
 
         // Ensure the user is a contributor
         const repository = await Repo.findOne();  // You may want to check specific repo by ID
@@ -83,6 +85,7 @@ const addResource = async (req, res) => {
             userId: req.user.id,
             title,
             body,
+            links,  // Add links if needed
             subjectTags,
             contributors: [req.user.id]  // Add the current user as a contributor (if needed)
         });

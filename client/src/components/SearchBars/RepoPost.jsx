@@ -64,6 +64,7 @@ const RepoPost = ({ setSearchQuery }) => {
     };
     
 
+
     return (
         <div
             className={`2xl:w-2/5 lg:w-2/5 md:w-1/2 sm:w-3/4 ${isExpanded ? 'h-auto' : 'h-16'
