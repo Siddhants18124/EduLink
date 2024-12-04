@@ -38,7 +38,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Icon */}
-            <div className="lg:hidden flex items-center">
+            <div className="lg:hidden flex items-center z-30">
                 <button onClick={toggleMenu} className="text-white text-2xl">
                     {isOpen ? <FaTimes /> : <FaBars />}
                 </button>
@@ -46,7 +46,7 @@ const Navbar = () => {
 
             {/* Mobile Menu */}
             <div
-                className={`fixed top-0 right-0 w-60 h-full bg-blue-500 text-white flex flex-col items-center pt-10 transition-transform transform ${
+                className={`fixed top-0 right-0 z-30 w-60 h-full bg-blue-500 text-white flex flex-col items-center pt-10 transition-transform transform ${
                     isOpen ? "translate-x-0" : "translate-x-full"
                 } lg:hidden`}
             >
@@ -55,9 +55,9 @@ const Navbar = () => {
                     <FaTimes />
                 </button>
                 
-                <Link to="/" className="text-lg p-2 font-semibold hover:text-blue-500 mt-12" onClick={toggleMenu}>Home</Link>
-                <Link to="/question" className="text-lg hover:text-blue-500 p-2 font-semibold" onClick={toggleMenu}>Question</Link>
-                <Link to="/resources" className="text-lg hover:text-blue-500 p-2 font-semibold" onClick={toggleMenu}>Resources</Link>
+                <Link to="/" className="text-lg p-2 font-semibold hover:text-black mt-12" onClick={toggleMenu}>Home</Link>
+                <Link to="/question" className="text-lg hover:text-black p-2 font-semibold" onClick={toggleMenu}>Question</Link>
+                <Link to="/resources" className="text-lg hover:text-black p-2 font-semibold" onClick={toggleMenu}>Resources</Link>
                 <Link>  </Link>
             </div>
         </section>

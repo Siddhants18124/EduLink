@@ -72,7 +72,7 @@ const Question = () => {
             </div>
 
             <div>
-                <button onClick={toggleDropdown} className='bg-[#242424] ml-80 mt-6 text-white p-3 rounded-full'>
+                <button onClick={toggleDropdown} className='bg-[#242424] ml-[25%] mt-6 text-white p-3 rounded-full'>
                     <FaFilter />
                 </button>
                 <span className='text-white font-semibold text-md lg:hidden'>Filters</span>
@@ -99,7 +99,7 @@ const Question = () => {
                 )}
             </div>
 
-            <div className='w-full lg:flex mt-20 items-start'>
+            <div className='w-full flex mt-20 lg:justify-start justify-center items-start'>
                 {/* Left Sidebar: My Question and Recent Question */}
                 <div className='basis-1/4 flex-col items-center text-center hidden lg:flex'>
                     <button className='bg-[#242424] text-white font-semibold w-1/2 p-3 m-2 rounded-2xl hover:bg-[#3b82f6]'
