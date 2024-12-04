@@ -4,11 +4,10 @@ const repoController = require('../controllers/repoController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Repo Routes
-router.post('/repo', authMiddleware, repoController.addResource); // Add content to repo
-router.post('/repo/contributor', authMiddleware, repoController.addContributor); // Add contributor
+router.post('/repo', authMiddleware, repoController.addResource); // Add resource to repo
+router.post('/repo/contributor', authMiddleware, repoController.addContributor); // Add contributor to repo
 router.post('/repo/:repoId/vote', authMiddleware, repoController.voteRepo); // Upvote/Downvote a repo
-router.get('/repo/:repoId', authMiddleware, repoController.getRepoContentById); // Get repo content by ID
-
-
+router.get('/repo/:repoId', authMiddleware, repoController.getRepoContentById); // Get resource content by ID
+router.get('/repo', authMiddleware, repoController.getAllResources);  // Fetch all resources posted
 
 module.exports = router;
