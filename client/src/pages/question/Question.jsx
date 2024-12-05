@@ -50,14 +50,14 @@ const Question = () => {
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
     const filteredQuestions = questions
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by createdAt in descending order
-    .filter((q) => {
-        if (filter === 'My Questions') {
-            return q.userId.email === user.email;
-        }
-        return filter === 'All' || q.subjectTags.includes(filter);
-    })
-    .filter((q) => q.title.toLowerCase().includes(searchQuery.toLowerCase())); // Filter by search query
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by createdAt in descending order
+        .filter((q) => {
+            if (filter === 'My Questions') {
+                return q.userId.email === user.email;
+            }
+            return filter === 'All' || q.subjectTags.includes(filter);
+        })
+        .filter((q) => q.title.toLowerCase().includes(searchQuery.toLowerCase())); // Filter by search query
 
     return (
         <div className='bg-[#151515] w-full min-h-screen flex flex-col'>
@@ -81,7 +81,7 @@ const Question = () => {
                     <div className='absolute bg-[#242424] p-4 rounded-lg text-white grid grid-cols-3 gap-4 ml-80 mt-2 shadow-lg'>
                         <button
                             onClick={() => setFilter('All')}
-                            className={`px-4 py-2 rounded-full font-semibold ${filter === 'All' ? 'bg-blue-500 text-white' : 'bg-gray-500 text-white'
+                            className={`px-4 py-2 rounded-full font-semibold ${filter === 'All' ? 'bg-blue-500 text-white' : 'bg-gray-500 text-gray-200'
                                 }`}
                         >
                             All
@@ -90,7 +90,8 @@ const Question = () => {
                             <button
                                 key={subject.name}
                                 onClick={() => setFilter(subject.name)}
-                                className={`px-4 py-2 rounded-full font-semibold ${subject.color}`}
+                                className={`px-4 py-2 rounded-full font-semibold ${filter === subject.name ? 'bg-blue-500 text-white' : 'bg-gray-500 text-gray-200'
+                                    }`}
                             >
                                 {subject.name}
                             </button>
@@ -113,11 +114,11 @@ const Question = () => {
                 </div>
                 <div className='basis-2/4 text-center w-4/5 items-center'>
                     {filteredQuestions.map((question) => (
-                        <Link key={question._id}   to={{
+                        <Link key={question._id} to={{
                             pathname: `/question/${question._id}`,
                             state: { userRole: user.role }  // Ensure you pass the user role in the state
                         }}>
-                            <QuestionBox question={question} />  
+                            <QuestionBox question={question} />
                         </Link>
 
                     ))}

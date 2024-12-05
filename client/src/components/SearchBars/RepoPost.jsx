@@ -82,7 +82,7 @@ const RepoPost = ({ setSearchQuery }) => {
                         onClick={toggleBox}
                         className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                     >
-                        Post
+                        Post resources
                     </button>
                 </div>
             )}

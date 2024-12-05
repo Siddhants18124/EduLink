@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: "student" // Default role
     },
+    status: { 
+        type: String, 
+        enum: ["active", "blocked"], 
+        default: "active" // Default status
+    },
     subjects: { type: [String], default: [] },
     createdAt: { type: Date, default: Date.now }
 });

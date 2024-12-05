@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaTrash } from 'react-icons/fa'; // Importing trash icon
+import { FaTrash, FaFlag } from 'react-icons/fa'; // Importing trash and flag icons
 
 const QuestionOpen = () => {
     const { questionId } = useParams();
@@ -51,7 +51,7 @@ const QuestionOpen = () => {
                 const response = await axios.delete(`http://localhost:8000/api/admin/question/${questionId}`, {
                     withCredentials: true,
                 });
-    
+
                 if (response.data.status) {
                     navigate(-1); // Go back to the previous page
                 } else {
@@ -94,6 +94,30 @@ const QuestionOpen = () => {
         }
     };
 
+    const handleReportUser = async () => {
+        if (window.confirm('Are you sure you want to report this user?')) {
+            try {
+                const response = await axios.post(
+                    'http://localhost:8000/api/report',
+                    {
+                        reportedUserId: question.userId._id, // ID of the user who posted the question
+                        reason: 'Inappropriate content', // You can customize this or make it dynamic
+                    },
+                    { withCredentials: true }
+                );
+
+                if (response.data.status) {
+                    alert('User has been reported successfully.');
+                } else {
+                    alert('Userhas been reported successfully.');
+                }
+            } catch (err) {
+                console.error('Error reporting user:', err);
+                alert('An error occurred while reporting the user.');
+            }
+        }
+    };
+
     if (!question) {
         return <p className="text-white">Loading question details...</p>;
     }
@@ -128,6 +152,18 @@ const QuestionOpen = () => {
                 <p className="text-xs text-gray-400 mt-4">
                     Asked by: {question.userId ? `${question.userId.firstName} ${question.userId.lastName}` : 'Unknown'}
                 </p>
+
+                {/* Report User Button */}
+                {/* Report User Button */}
+                {(user.role === 'faculty' || user.role === 'student') && user._id !== question.userId._id && (
+                    <button
+                        onClick={handleReportUser}
+                        className="bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-700 transition mt-4 flex items-center"
+                    >
+                        <FaFlag className="mr-2" />
+                        Report User
+                    </button>
+                )}
 
                 {/* Delete Button for Admin */}
                 {user.role === 'admin' && (

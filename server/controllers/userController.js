@@ -1,18 +1,70 @@
 const User = require("../model/Users");
+const Report = require("../model/Report");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
+// const signup = async (req, res) => {
+//   const { firstName, lastName, email, password, batch, year } = req.body;
+
+//   try {
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({ status: false, message: "User already exists" });
+//     }
+
+//     let role = "student";
+//     if (email === "admin@bmu.edu.in") {
+//       role = "admin";
+//     } else if (/^[a-zA-Z]+\.[a-zA-Z]+@bmu\.edu\.in$/.test(email)) {
+//       role = "faculty";
+//     } else if (/^.+\.(\d{2})([a-zA-Z]+)@bmu\.edu\.in$/.test(email)) {
+//       // Additional validation for student emails
+//     } else {
+//       return res.status(400).json({ status: false, message: "Invalid email format" });
+//     }
+
+//     const hashedPassword = bcrypt.hashSync(password, 10);
+
+//     const user = new User({
+//       firstName,
+//       lastName,
+//       email,
+//       password: hashedPassword,
+//       batch,
+//       year,
+//       role,
+//     });
+
+//     await user.save();
+//     return res.status(201).json({ status: true, message: "Signup successful", user });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ status: false, message: "Server error" });
+//   }
+// };
 const signup = async (req, res) => {
   const { firstName, lastName, email, password, batch, year } = req.body;
 
   try {
+    // Check if a user with the given email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ status: false, message: "User already exists" });
+      if (existingUser.status === "blocked") {
+        return res
+          .status(403)
+          .json({
+            status: false,
+            message: "User is blocked. Contact admin for support.",
+          });
+      }
+      return res
+        .status(400)
+        .json({ status: false, message: "User already exists" });
     }
 
+    // Determine user role based on email
     let role = "student";
     if (email === "admin@bmu.edu.in") {
       role = "admin";
@@ -21,11 +73,15 @@ const signup = async (req, res) => {
     } else if (/^.+\.(\d{2})([a-zA-Z]+)@bmu\.edu\.in$/.test(email)) {
       // Additional validation for student emails
     } else {
-      return res.status(400).json({ status: false, message: "Invalid email format" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid email format" });
     }
 
+    // Hash the password
     const hashedPassword = bcrypt.hashSync(password, 10);
 
+    // Create the new user
     const user = new User({
       firstName,
       lastName,
@@ -34,50 +90,125 @@ const signup = async (req, res) => {
       batch,
       year,
       role,
+      status: "active", // Default status for a new user
     });
 
+    // Save the user to the database
     await user.save();
-    return res.status(201).json({ status: true, message: "Signup successful", user });
+    return res
+      .status(201)
+      .json({ status: true, message: "Signup successful", user });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ status: false, message: "Server error" });
   }
 };
+
+// const login = async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     const existingUser = await User.findOne({ email });
+//     if (!existingUser) {
+//       return res.status(400).json({ status: false, message: "User not found" });
+//     }
+
+//     const isPasswordMatch = await bcrypt.compare(
+//       password,
+//       existingUser.password
+//     );
+//     if (!isPasswordMatch) {
+//       return res
+//         .status(400)
+//         .json({ status: false, message: "Invalid credentials" });
+//     }
+
+//     const token = jwt.sign(
+//       { id: existingUser._id, role: existingUser.role },
+//       SECRET_KEY,
+//       { expiresIn: "7h" }
+//     );
+
+//     res.cookie("Token", token, {
+//       path: "/",
+//       httpOnly: true,
+//       expires: new Date(Date.now() + 7 * 3600000),
+//       sameSite: "lax",
+//     });
+
+//     console.log("Generated token: ", token);
+//     return res
+//       .status(200)
+//       .json({
+//         status: true,
+//         message: "Login successful",
+//         user: existingUser,
+//         token,
+//       });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ status: false, message: "Server error" });
+//   }
+// };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) {
-      return res.status(400).json({ status: false, message: "User not found" });
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
-    if (!isPasswordMatch) {
-      return res.status(400).json({ status: false, message: "Invalid credentials" });
+    // Check if the user is blocked
+    if (user.status === "blocked") {
+      return res
+        .status(403)
+        .json({ message: "Your account has been blocked. Contact the admin for further details." });
     }
 
-    const token = jwt.sign({ id: existingUser._id, role: existingUser.role }, SECRET_KEY, { expiresIn: "7h" });
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role }, // Include role for future use
+      process.env.SECRET_KEY || "your_secret_key", // Use environment variable for security
+      { expiresIn: "7h" }
+    );
+
+    // Set the token in a cookie
     res.cookie("Token", token, {
       path: "/",
       httpOnly: true,
-      expires: new Date(Date.now() + 7 * 3600000),
+      expires: new Date(Date.now() + 7 * 3600000), // Cookie expiration matches token
       sameSite: "lax",
     });
 
-    console.log("Generated token: ", token);
-    return res.status(200).json({ status: true, message: "Login successful", user: existingUser, token });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ status: false, message: "Server error" });
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "An error occurred during login" });
   }
 };
 
 const verifyToken = (req, res, next) => {
   const cookies = req.headers.cookie;
-  const token = cookies?.split("; ").find((cookie) => cookie.startsWith("Token="))?.split("=")[1];
+  const token = cookies
+    ?.split("; ")
+    .find((cookie) => cookie.startsWith("Token="))
+    ?.split("=")[1];
 
   if (!token) {
     return res.status(404).json({ status: false, message: "No token found" });
@@ -108,7 +239,10 @@ const getUser = async (req, res) => {
 
 const refreshToken = (req, res, next) => {
   const cookies = req.headers.cookie;
-  const prevToken = cookies?.split("; ").find((cookie) => cookie.startsWith("Token="))?.split("=")[1];
+  const prevToken = cookies
+    ?.split("; ")
+    .find((cookie) => cookie.startsWith("Token="))
+    ?.split("=")[1];
 
   if (!prevToken) {
     return res.status(400).json({ message: "No token found" });
@@ -135,8 +269,6 @@ const refreshToken = (req, res, next) => {
   });
 };
 
-
-
 const updateFacultySubjects = async (req, res, next) => {
   const { userId, subjects } = req.body; // Expect userId and updated subjects array in the request body
 
@@ -148,7 +280,12 @@ const updateFacultySubjects = async (req, res, next) => {
     }
 
     if (user.role !== "faculty") {
-      return res.status(403).json({ status: false, message: "Only faculty can have subjects updated" });
+      return res
+        .status(403)
+        .json({
+          status: false,
+          message: "Only faculty can have subjects updated",
+        });
     }
 
     // Update the subjects array
@@ -181,7 +318,12 @@ const updateSubjects = async (req, res) => {
 
     // Check if the user is a faculty member
     if (user.role !== "faculty") {
-      return res.status(403).json({ status: false, message: "Only faculty members can add subjects" });
+      return res
+        .status(403)
+        .json({
+          status: false,
+          message: "Only faculty members can add subjects",
+        });
     }
 
     // Add new subjects to the user's subjects array, avoiding duplicates
@@ -191,20 +333,86 @@ const updateSubjects = async (req, res) => {
     // Save the updated user document
     await user.save();
 
-    return res.status(200).json({ status: true, message: "Subjects updated successfully", subjects: user.subjects });
+    return res
+      .status(200)
+      .json({
+        status: true,
+        message: "Subjects updated successfully",
+        subjects: user.subjects,
+      });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ status: false, message: "Server error" });
   }
 };
 
+const removeSubjects = async (req, res) => {
+  const { id } = req;
+  const { subjects } = req.body; // Array of subjects to be removed
+
+  try {
+    // Fetch the user by ID
+    const user = await User.findById(id);
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    // Check if the user is a faculty member
+    if (user.role !== "faculty") {
+      return res
+        .status(403)
+        .json({
+          status: false,
+          message: "Only faculty members can remove subjects",
+        });
+    }
+
+    // Remove subjects from the user's subjects array
+    const updatedSubjects = user.subjects.filter(
+      (subject) => !subjects.includes(subject)
+    );
+    user.subjects = updatedSubjects;
+
+    // Save the updated user document
+    await user.save();
+
+    return res
+      .status(200)
+      .json({
+        status: true,
+        message: "Subjects removed successfully",
+        subjects: user.subjects,
+      });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
+};
 
 const logout = (req, res) => {
   res.clearCookie("Token", { path: "/" });
   return res.status(200).json({ message: "Successfully Logged Out" });
 };
 
-
+const reportUser = async (req, res) => {
+  const { reportedUserId, reason } = req.body;
+  try {
+    const report = new Report({
+      reportedUserId,
+      reason,
+      reportedAt: new Date(),
+      status: "pending",
+    });
+    await report.save();
+    res.status(201).json({ message: "User reported successfully." });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to report user." });
+  }
+};
+exports.removeSubjects = removeSubjects;
+exports.reportUser = reportUser;
 exports.updateFacultySubjects = updateFacultySubjects;
 exports.updateSubjects = updateSubjects;
 exports.signup = signup;

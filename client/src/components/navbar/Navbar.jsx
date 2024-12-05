@@ -13,11 +13,12 @@ const Navbar = () => {
 
     return (
         <section className="navbar w-full h-16 p-20 bg-transparent flex items-center justify-between px-8 relative">
-            <div className="flex items-center">
-                <img src={Logo} className="w-11 h-11 ml-4 md:ml-24 rounded-full" alt="Logo" />
-                <span className="ml-4 text-white text-lg font-semibold">EduLink</span>
-            </div>
-            
+            <Link to="/home" className="font-semibold">
+                <div className="flex items-center">
+                    <img src={Logo} className="w-11 h-11 ml-4 md:ml-24 rounded-full" alt="Logo" />
+                    <span className="ml-4 text-white text-lg font-semibold">EduLink</span>
+                </div>
+            </Link>
             {/* Desktop Menu */}
             <ul className="hidden lg:flex space-x-10 text-white">
                 <li className="cursor-pointer px-5">

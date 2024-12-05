@@ -35,7 +35,7 @@ const Resources = () => {
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
     const filteredResources = resources
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by createdAt in descending order
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by createdAt in descending order
         .filter((resource) => {
             // Filter based on selected subject
             if (filter === 'All') return true;
@@ -71,7 +71,8 @@ const Resources = () => {
                     <div className='absolute bg-[#242424] p-4 rounded-lg text-white grid grid-cols-3 gap-4 ml-80 mt-2 shadow-lg'>
                         <button
                             onClick={() => setFilter('All')}
-                            className={`px-4 py-2 rounded-full font-semibold ${filter === 'All' ? 'bg-blue-500 text-white' : 'bg-gray-500 text-white'}`}
+                            className={`px-4 py-2 rounded-full font-semibold ${filter === 'All' ? 'bg-blue-500 text-white' : 'bg-gray-500 text-gray-200'
+                                }`}
                         >
                             All
                         </button>
@@ -79,7 +80,8 @@ const Resources = () => {
                             <button
                                 key={subject.name}
                                 onClick={() => setFilter(subject.name)}
-                                className={`px-4 py-2 rounded-full font-semibold ${subject.color}`}
+                                className={`px-4 py-2 rounded-full font-semibold ${filter === subject.name ? 'bg-blue-500 text-white' : 'bg-gray-500 text-gray-200'
+                                    }`}
                             >
                                 {subject.name}
                             </button>
