@@ -1,6 +1,7 @@
 const User = require("../model/Users");
 const Repo = require('../model/Repo');
 const Question = require('../model/Question');
+const Report = require("../model/Report");
 
 const removeContributor = async (req, res) => {
     try {
@@ -93,5 +94,63 @@ const changeUserRole = async (req, res) => {
     }
 };
 
+// Get Reports for Admin
+const getReports = async (req, res) => {
+    try {
+        const reports = await Report.find({ status: 'pending' })
+            .populate('reportedUserId', 'email')
+            .sort({ reportedAt: -1 });
+        res.json(reports);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch reports.' });
+    }
+};
 
-module.exports = {  deleteRepoContent, deleteQuestion, changeUserRole, removeContributor };
+// Block a User
+const blockUser = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        const user = await User.findByIdAndUpdate(userId, { status: "blocked" }, { new: true });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        await Report.updateMany({ reportedUserId: userId }, { status: "resolved" });
+
+        res.status(200).json({ message: "User blocked successfully", user });
+    } catch (error) {
+        res.status(500).json({ message: "An error occurred while blocking the user", error });
+    }
+};
+
+// Unblock a User
+const unblockUser = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        const user = await User.findByIdAndUpdate(userId, { status: "active" }, { new: true });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ message: "User unblocked successfully", user });
+    } catch (error) {
+        res.status(500).json({ message: "An error occurred while unblocking the user", error });
+    }
+};
+
+// Get Blocked Users for Admin
+const getBlockedUsers = async (req, res) => {
+    try {
+        const blockedUsers = await User.find({ status: 'blocked' }, 'firstName lastName email');
+        res.status(200).json(blockedUsers);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch blocked users.' });
+    }
+};
+
+
+
+
+module.exports = {  deleteRepoContent, deleteQuestion, changeUserRole, removeContributor, getReports, blockUser, unblockUser, getBlockedUsers };

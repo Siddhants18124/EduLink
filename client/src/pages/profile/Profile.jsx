@@ -1,220 +1,26 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
-import ProfilePic from "../../assets/ketan.jpg";
 import { useDispatch } from "react-redux";
 import { authActions } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import subjects from "../../components/subjects.json"; // Import subjects JSON file
-import { FaPlus } from "react-icons/fa";
-import QuestionBox from "../../components/QuestionBox/QuestionBox";
-import AskProfile from "../../components/SearchBars/AskProfile";
-import AskRepo from "../../components/SearchBars/AskRepo";
-import ResourceBox from "../../components/ResourceBox/ResourceBox";
 import cookie from "js-cookie";
+import ProfilePic from "../../assets/ketan.jpg";
+import subjects from "../../components/subjects.json"; // Import subjects JSON file
+import { FaPlus,FaMinus } from "react-icons/fa";
 
 axios.defaults.withCredentials = true;
 
 const Profile = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-  const [resources, setResources] = useState([]);
   const [user, setUser] = useState({});
-  const [questions, setQuestions] = useState([]);
+  const [reportedUsers, setReportedUsers] = useState([]);
+  const [blockedUsers, setBlockedUsers] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown state
   const [selectedTags, setSelectedTags] = useState([]); // Selected subject tags
-  const [showAdminContent, setShowAdminContent] = useState(false); // To toggle admin content visibility
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
-  const [filteredQuestions, setFilteredQuestions] = useState([]); // Store filtered questions
-  const [filteredResources, setFilteredResources] = useState([]); // Store filtered questions
-  const [contributorId, setContributorId] = useState(""); // New state for email input
-
-  const refreshToken = async () => {
-    const res = await axios
-      .get("http://localhost:8000/api/refresh", { withCredentials: true })
-      .catch((err) => console.log(err));
-    const data = await res.data;
-    return data;
-  };
-
-  const sendRequest = async () => {
-    const res = await axios
-      .get("http://localhost:8000/api/profile", { withCredentials: true })
-      .catch((err) => console.log(err));
-    const data = await res.data;
-    return data;
-  };
-// Inside the useEffect for filtering questions and resources
-// Inside the Profile component
-useEffect(() => {
-    let filteredBySearch = [];
-    let filteredByTags = [];
-  
-    // Filtering logic for admin and faculty
-    if (user.role === "admin" || user.role === "faculty") {
-      // Step 1: Filter by search query
-      filteredBySearch = questions.filter((q) =>
-        q.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  
-      // Step 2: Filter by selected tags (if any tags are selected)
-      if (selectedTags.length > 0) {
-        filteredByTags = filteredBySearch.filter((q) =>
-          selectedTags.every((tag) => q.subjectTags?.includes(tag))
-        );
-      } else {
-        // If no tags are selected, skip tag filtering
-        filteredByTags = filteredBySearch;
-      }
-  
-      // Update state with filtered questions
-      setFilteredQuestions(filteredByTags);
-  
-      // Repeat for resources
-      const filteredResourcesBySearch = resources.filter((r) =>
-        r.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  
-      let filteredResourcesByTags = [];
-      if (selectedTags.length > 0) {
-        filteredResourcesByTags = filteredResourcesBySearch.filter((r) =>
-          selectedTags.every((tag) => r.tags?.includes(tag))
-        );
-      } else {
-        filteredResourcesByTags = filteredResourcesBySearch;
-      }
-  
-      setFilteredResources(filteredResourcesByTags);
-  
-    } else {
-      // For students: Only their own questions
-      filteredBySearch = questions.filter(
-        (q) =>
-          q.userId.email === user.email &&
-          q.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  
-      if (selectedTags.length > 0) {
-        filteredByTags = filteredBySearch.filter((q) =>
-          selectedTags.every((tag) => q.tags?.includes(tag))
-        );
-      } else {
-        filteredByTags = filteredBySearch;
-      }
-  
-      setFilteredQuestions(filteredByTags);
-  
-      const filteredResourcesBySearch = resources.filter(
-        (r) =>
-          r.userId.email === user.email &&
-          r.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  
-      let filteredResourcesByTags = [];
-      if (selectedTags.length > 0) {
-        filteredResourcesByTags = filteredResourcesBySearch.filter((r) =>
-          selectedTags.every((tag) => r.tags?.includes(tag))
-        );
-      } else {
-        filteredResourcesByTags = filteredResourcesBySearch;
-      }
-  
-      setFilteredResources(filteredResourcesByTags);
-    }
-  }, [questions, resources, searchQuery, selectedTags, user]);
-  
-  
-  
-
-  useEffect(() => {
-    const fetchResources = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get("http://localhost:8000/api/repo/repo");
-        if (response.data && response.data.resources) {
-          setResources(response.data.resources);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching resources:", error);
-        setLoading(false);
-      }
-    };
-    fetchResources();
-
-    const fetchData = async () => {
-      setLoading(true);
-      const data = await sendRequest();
-      if (data) {
-        setUser(data.user);
-      }
-      setLoading(false);
-    };
-    fetchData();
-
-    const fetchQuestions = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8000/api/question/questions"
-        );
-        setQuestions(response.data.questions);
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-      }
-    };
-    fetchQuestions();
-
-    const interval = setInterval(() => {
-      refreshToken().then((data) => {
-        if (data) setUser(data.user);
-      });
-    }, 1000 * 29);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const sendLogoutReq = async () => {
-    const res = await axios.post("http://localhost:8000/api/logout", null, {
-      withCredentials: true,
-    });
-    if (res.status === 200) {
-      return res;
-    }
-    return new Error("Unable TO Logout. Please try again");
-  };    
-
   const token = cookie.get("Token");
-
-  const handleLogout = () => {
-    sendLogoutReq().then(() => dispatch(authActions.logout()));
-    navigate("/login");
-  };
-    // Handle add contributor
-    const handleAddContributor = async () => {
-        if (!contributorId) {
-          alert("Please enter a valid email.");
-          return;
-        }
-    
-        try {
-          const response = await axios.post(
-            "http://localhost:8000/api/repo/repo/contributor",
-            { contributorId: contributorId },
-            {headers: {Authorization: `Bearer ${token}`}}
-          );
-    
-          if (response.data.success) {
-            alert("Contributor added successfully.");
-            setContributorId(""); // Reset the email input after adding
-          } else {
-            alert("Failed to add contributor.");
-          }
-        } catch (error) {
-          console.error("Error adding contributor:", error.message);
-          alert("An error occurred while adding the contributor.");
-        }
-      };
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -226,7 +32,7 @@ useEffect(() => {
   //     );
   // };
 
-  const handleTagClick = async (tag) => {
+  const handleTagAdd = async (tag) => {
     const updatedTags = selectedTags.includes(tag)
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
@@ -251,93 +57,247 @@ useEffect(() => {
       console.error("Failed to update subjects:", error);
     }
   };
+  const handleTagRemove = async (tag) => {
+    try {
+      const response = await axios.put(
+        "http://localhost:8000/api/remove-subjects",
+        {
+          id: user.id,
+          subjects: [tag],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.data.status) {
+        // Remove the tag from the selectedTags state immediately
+        setSelectedTags((prevTags) => prevTags.filter((subject) => subject !== tag));
+        // Remove the tag from the user.subjects state as well
+        setUser((prevUser) => ({
+          ...prevUser,
+          subjects: prevUser.subjects.filter((subject) => subject !== tag),
+        }));
+        // alert("Tag removed successfully!");
+      } else {
+        alert(response.data.message || "Failed to remove tag.");
+      }
+    } catch (error) {
+      console.error("Error removing tag:", error);
+      alert("Error removing tag.");
+    }
+  };
+  
+  
+  const sendRequest = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/profile", {
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // Log for debugging search query updates
+  const fetchReportedUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/admin/reports", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status === 200) {
+        // Filter to only keep one report per user ID
+        const uniqueReports = [];
+        const seenUserIds = new Set();
+
+        res.data.forEach((report) => {
+          if (!seenUserIds.has(report.reportedUserId._id)) {
+            uniqueReports.push(report);
+            seenUserIds.add(report.reportedUserId._id);
+          }
+        });
+
+        setReportedUsers(uniqueReports);
+      }
+    } catch (err) {
+      console.error("Error fetching reported users:", err);
+    }
+  };
+
+
+  const fetchBlockedUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/admin/blocked", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 200) {
+        setBlockedUsers(res.data); // Fetches blocked users
+      }
+    } catch (err) {
+      console.error("Error fetching blocked users:", err);
+    }
+  };
+
+  const handleBlockUser = async (userId) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8000/api/admin/block",
+        { userId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.status === 200 && res.data.message === "User blocked successfully") {
+        setReportedUsers((prev) =>
+          prev.filter((user) => user.reportedUserId._id !== userId)
+        ); // Remove the blocked user from the reported list
+        fetchBlockedUsers(); // Update blocked list
+        alert("User blocked successfully.");
+      }
+    } catch (err) {
+      console.error("Error blocking user:", err);
+      alert("Failed to block user.");
+    }
+  };
+
+  const handleUnblockUser = async (userId) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8000/api/admin/unblock",
+        { userId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.status === 200 && res.data.message === "User unblocked successfully") {
+        setBlockedUsers((prev) => prev.filter((user) => user._id !== userId)); // Remove unblocked user from blocked list
+        alert("User unblocked successfully.");
+      }
+    } catch (err) {
+      console.error("Error unblocking user:", err);
+      alert("Failed to unblock user.");
+    }
+  };
+
+  const handleLogout = () => {
+    axios
+      .post("http://localhost:8000/api/logout", null, { withCredentials: true })
+      .then(() => {
+        dispatch(authActions.logout());
+        navigate("/login");
+      })
+      .catch((err) => console.error("Logout failed:", err));
+  };
+
   useEffect(() => {
-    console.log("Search Query: ", searchQuery);
-  }, [searchQuery]);
+    const fetchData = async () => {
+      setLoading(true);
+      const profileData = await sendRequest();
+      if (profileData) setUser(profileData.user);
+      setLoading(false);
+    };
+
+    fetchData();
+    fetchReportedUsers();
+    fetchBlockedUsers();
+  }, []);
 
   return (
     <div className="bg-[#151515] w-full min-h-screen flex flex-col">
       {/* Navbar */}
       <Navbar />
 
-      {/* Main Div */}
+      {/* Main Content */}
       <div className="flex">
         {/* Profile Section */}
-        <div className="flex flex-col basis-1/3">
-          {/* Profile Image */}
-          <div>
-            <img
-              src={ProfilePic}
-              className="w-1/2 m-auto mt-12 rounded-full"
-              alt="Profile"
-            />
-          </div>
-
-          {/* Profile Details */}
-          <h3 className="ml-[25%] text-2xl text-white font-semibold pt-8">
+        {/* Profile Section */}
+        <div
+          className={`flex flex-col ${user.role !== "admin" ? "items-center justify-center w-full" : "basis-1/3"
+            }`}
+        >
+          <img
+            src={ProfilePic}
+            className={`${user.role !== "admin" ? "w-56 h-56" : "w-1/2 m-auto"
+              } mt-12 rounded-full`}
+            alt="Profile"
+          />
+          <h3
+            className={`${user.role !== "admin" ? "text-center p-1" : "ml-[25%]"
+              } text-2xl text-white font-semibold pt-8`}
+          >
             {user.firstName} {user.lastName}
           </h3>
-
-          {/* Batch and Year */}
-          <p className="ml-[25%] text-md text-white">
-            {user.batch} {user.year}
+          <p
+            className={`${user.role !== "admin" ? "text-center p-1" : "ml-[25%]"
+              } text-md text-white`}
+          >
+            Batch: {user.batch} Year: {user.year}
           </p>
-          {/* User Id */}
-          <p className="ml-[25%] text-md text-white">
-            User Id: {user._id}
+          <p
+            className={`${user.role !== "admin" ? "text-center p-1" : "ml-[25%]"
+              } text-md text-white`}
+          >
+            User ID: {user._id}
           </p>
-           {/* User Id */}
-           <p className="ml-[25%] text-md text-white">
-            Email Id: {user.email}
+          <p
+            className={`${user.role !== "admin" ? "text-center p-1" : "ml-[25%]"
+              } text-md text-white`}
+          >
+            Email: {user.email}
           </p>
-           {/* User Id */}
-           <p className="ml-[25%] text-md text-white">
+          <p
+            className={`${user.role !== "admin" ? "text-center p-1" : "ml-[25%]"
+              } text-md text-white`}
+          >
             Role: {user.role}
           </p>
-          {/* Display selected subjects for faculty */}
-          {user.role === "faculty" && user.subjects?.length > 0 && (
-            <div className="ml-[25%] mt-4">
-              <h3 className="text-white text-lg font-semibold">
-                Your Subjects:
-              </h3>
-              <div className="flex flex-wrap mt-2">
-                {user.subjects.map((subject) => (
-                  <span
-                    key={subject}
-                    className="bg-blue-500 text-white px-3 py-1 m-1 rounded-full"
-                  >
-                    {subject}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          <h3 className="text-white text-lg font-semibold">Your Subjects:</h3>
+         {/* Display selected subjects for faculty */}
+      {user.role === "faculty" && user.subjects?.length > 0 && (
+        <div className=" mt-4">
+          <div className="flex flex-wrap w-65 mt-2">
+            {user.subjects.map((subject) => (
+              <span
+                key={`subject-${subject}`}
+                className="bg-blue-500 text-white px-3 py-1 m-1 rounded-full"
+              >
+                {subject}
+                <FaMinus
+                  onClick={() => handleTagRemove(subject)}
+                  className="ml-2 text-white cursor-pointer"
+                  size={16}
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
-          {/* Plus Icon (Only visible for faculty) */}
-          {user.role === "faculty" && (
-            <div className="ml-[25%] mt-4 flex items-center">
-              <FaPlus
-                onClick={toggleDropdown}
-                className="text-white bg-gray-700 p-1 rounded-full cursor-pointer hover:bg-blue-500"
-                size={24}
-              />
-            </div>
-          )}
-
-          {/* Dropdown with Tags (Only visible for faculty) */}
-          {user.role === "faculty" && showDropdown && (
-            <div className="ml-[25%] mt-2 bg-gray-800 p-4 rounded-lg shadow-lg max-w-xs">
-              <p className="text-white mb-2">Select Tags:</p>
+      {/* Dropdown with Tags (Only visible for faculty) */}
+      {user.role === "faculty" && (
+        <div className="mt-4">
+          <button
+            onClick={toggleDropdown}
+            className="bg-gray-700 text-white px-4 py-2 rounded-md flex items-center"
+          >
+            {showDropdown ? "Hide Subject Tags" : "Select Subject Tags"}
+            <FaPlus className="ml-2" size={16} />
+          </button>
+          {showDropdown && (
+            <div className="bg-gray-800 p-4 rounded-lg shadow-lg max-w-xs mt-2">
+              <p className="text-white mb-2">Select Subject Tags:</p>
               <div className="flex flex-wrap">
                 {subjects.map((subject) => (
                   <span
-                    key={subject.name}
-                    onClick={() => handleTagClick(subject.name)}
+                    key={`dropdown-${subject.name}`}
+                    onClick={() => handleTagAdd(subject.name)}
                     className={`cursor-pointer px-3 py-1 m-1 rounded-full text-sm ${
-                      selectedTags.includes(subject.name)
-                        ? subject.color
+                      selectedTags.includes(subject.name) || user.subjects?.includes(subject.name)
+                        ? "bg-blue-500 text-white"
                         : "bg-gray-500 text-gray-200"
                     }`}
                   >
@@ -347,109 +307,92 @@ useEffect(() => {
               </div>
             </div>
           )}
-
-          {/* Logout Button */}
+        </div>
+      )}
           <button
             onClick={handleLogout}
-            className="bg-red-700 ml-[25%] w-20 mt-8 py-2 rounded-lg text-white font-semibold"
+            className={`bg-red-700 ${user.role !== "admin" ? "mt-6" : "ml-[25%] mt-8"
+              } w-20 py-2 rounded-lg text-white font-semibold`}
           >
             Logout
           </button>
-
-          {/* Admin and Faculty-specific content */}
-          {(user.role === "admin" || user.role === "faculty") && (
-            <div className="ml-[25%] mt-4">
-              <button
-                onClick={() => setShowAdminContent("questions")}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md mr-4"
-              >
-                Questions
-              </button>
-              <button
-                onClick={() => setShowAdminContent("resources")}
-                className="bg-green-500 text-white px-4 py-2 rounded-md"
-              >
-                Resources
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Right Panel */}
-        <div className="basis-2/4 flex flex-col">
-          
-           {/* Add Contributor Section (Visible for Faculty) */}
-           {/* {user.role === "admin" && (
-            <div className="ml-[25%] mt-4">
-              <h3 className="text-white text-lg font-semibold">Add Contributor:</h3>
-              <input
-                type=""
-                value={contributorId}
-                onChange={(e) => setContributorId(e.target.value)}
-                placeholder="Enter email"
-                className="mt-2 p-2 w-3/4 rounded-md border border-gray-300"
-              />
-              <button
-                onClick={handleAddContributor}
-                className="bg-blue-500 text-white px-4 py-2 mt-2 rounded-md"
-              >
-                Add Contributor
-              </button>
-            </div>
-          )} */}
-          {user.role === "student" && (
-            <>
-              {/* Always show AskProfile component */}
-              <AskProfile setSearchQuery={setSearchQuery} />
-              <h2 className="text-white text-2xl font-semibold mt-4 mb-4">
-                Your Questions
-              </h2>
-              {filteredQuestions.length > 0 ? (
-                filteredQuestions.map((question) => (
-                  <QuestionBox key={question._id} question={question} />
-                ))
-              ) : (
-                <p className="text-white">No questions posted yet.</p>
-              )}
-            </>
-          )}
 
-          {/* Admin and Faculty-specific content */}
-          {(user.role === "admin" || user.role === "faculty") &&
-            showAdminContent === "questions" && (
-              <>
-                <AskProfile setSearchQuery={setSearchQuery} />
-                <h2 className="text-white text-2xl font-semibold mt-4 mb-4">
-                  All Questions
-                </h2>
-                {filteredQuestions.length > 0 ? (
-                  filteredQuestions.map((question) => (
-                    <QuestionBox key={question._id} question={question} />
-                  ))
-                ) : (
-                  <p className="text-white">No questions found.</p>
-                )}
-              </>
+        {/* Admin Panel */}
+        {user.role === "admin" && (
+          <div className="basis-2/4 ml-[10%] mt-4">
+            {/* Single Reported User */}
+            <h2 className="text-white text-2xl font-semibold mb-4">
+              Reported User
+            </h2>
+            {reportedUsers.length > 0 ? (
+              reportedUsers.map((report) => (
+                <div
+                  key={report._id}
+                  className="bg-gray-800 p-4 mb-2 rounded-md flex justify-between items-center"
+                >
+                  <div className="text-white">
+                    <p>
+                      {report.reportedUserId.firstName} {report.reportedUserId.lastName}
+                    </p>
+                    <p>User ID: {report.reportedUserId._id}</p>
+                    <p>Email: {report.reportedUserId.email}</p>
+                  </div>
+                  <div className="flex">
+                    {report.reportedUserId.isBlocked ? (
+                      <button
+                        onClick={() => handleUnblockUser(report.reportedUserId._id)}
+                        className="bg-green-500 text-white px-4 py-2 rounded-md"
+                      >
+                        Unblock
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleBlockUser(report.reportedUserId._id)}
+                        className="bg-red-700 text-white px-4 py-2 rounded-md"
+                      >
+                        Block
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-white">No reported users found.</p>
             )}
 
-          {/* Add similar code for Resources */}
-          {(user.role === "admin" || user.role === "faculty") &&
-            showAdminContent === "resources" && (
-              <>
-                <AskRepo setSearchQuery={setSearchQuery} />
-                <h2 className="text-white text-2xl font-semibold mt-4 mb-4">
-                  All Resources
-                </h2>
-                {filteredResources.length > 0 ? (
-                  filteredResources.map((resource) => (
-                    <ResourceBox key={resource._id} resource={resource} />
-                  ))
-                ) : (
-                  <p className="text-white">No resource found.</p>
-                )}
-              </>
+
+            {/* Blocked Users */}
+            <h2 className="text-white text-2xl font-semibold mt-6 mb-2">
+              Blocked Users
+            </h2>
+            {blockedUsers.length > 0 ? (
+              blockedUsers.map((user) => (
+                <div
+                  key={user._id}
+                  className="bg-gray-800 p-4 mb-2 rounded-md flex justify-between items-center"
+                >
+                  <div className="text-white">
+                    <p>
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p>User ID: {user._id}</p>
+                    <p>Email: {user.email}</p>
+                  </div>
+                  <button
+                    onClick={() => handleUnblockUser(user._id)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                  >
+                    Unblock
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-white">No blocked users found.</p>
             )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
